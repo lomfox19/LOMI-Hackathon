@@ -1,0 +1,450 @@
+// ============================================
+// SVH AUTH MODULE - Complete UI Component
+// File: frontend/src/auth/AuthUI.jsx
+// ============================================
+import React, { useState } from 'react';
+import { Mail, Lock, User, Shield, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
+import authService from './authService';
+
+const AuthUI = ({ onSuccess, customStyles = {} }) => {
+  const [step, setStep] = useState('signin');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [loginId, setLoginId] = useState('');
+
+  const handleOtpChange = (index, value) => {
+    if (value.length <= 1 && /^\d*$/.test(value)) {
+      const newOtp = [...otp];
+      newOtp[index] = value;
+      setOtp(newOtp);
+      if (value && index < 5) {
+        document.getElementById(`otp-${index + 1}`)?.focus();
+      }
+    }
+  };
+
+  const handleSignIn = async () => {
+    try {
+      setError('');
+      setLoading(true);
+      if (!loginId || !password) {
+        setError('Please fill in all fields');
+        return;
+      }
+      const response = await authService.signin(loginId, password);
+      if (onSuccess) onSuccess(response.user);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Sign in failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignUp = async () => {
+    try {
+      setError('');
+      setLoading(true);
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setError('Please enter a valid email');
+        return;
+      }
+      await authService.signup(email);
+      setStep('otp');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Signup failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOtpVerify = async () => {
+    try {
+      setError('');
+      setLoading(true);
+      const otpCode = otp.join('');
+      if (otpCode.length !== 6) {
+        setError('Please enter complete OTP');
+        return;
+      }
+      await authService.verifyOTP(email, otpCode);
+      setStep('username');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Invalid OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUsernameSubmit = async () => {
+    try {
+      setError('');
+      setLoading(true);
+      if (!username || !password || !confirmPassword) {
+        setError('Please fill in all fields');
+        return;
+      }
+      if (username.length < 3) {
+        setError('Username must be at least 3 characters');
+        return;
+      }
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Passwords do not match');
+        return;
+      }
+      const response = await authService.completeSignup(email, username, password);
+      setStep('complete');
+      if (onSuccess) {
+        setTimeout(() => onSuccess(response.user), 2000);
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Google Sign-In Handlers
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setError('');
+      setLoading(true);
+      const response = await authService.googleSignIn(credentialResponse.credential);
+      if (onSuccess) onSuccess(response.user);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Google sign-in failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError('Google sign-in was cancelled or failed');
+  };
+
+  const handleResendOTP = async () => {
+    try {
+      setError('');
+      setLoading(true);
+      await authService.signup(email);
+      alert('OTP resent to your email');
+    } catch (err) {
+      setError('Failed to resend OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const containerClass = customStyles.container || 'min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4';
+
+  return (
+    <div className={containerClass}>
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAgNGgtMnYyaDJ2LTJ6bTAtOGgydi0yaC0ydjJ6bS0yLTJoLTJ2Mmgydi0yem0tMiAydjJoMnYtMmgtMnptMiAyaDJ2MmgtMnYtMnptMC00aDJ2LTJoLTJ2MnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40"></div>
+
+      <div className="relative w-full max-w-md">
+        <div className="absolute -inset-1 bg-gradient-to-r from-black to-gray-800 rounded-2xl blur opacity-25"></div>
+
+        <div className="relative bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
+          {error && (
+            <div className="mx-8 mt-8 p-4 bg-red-500/20 border border-red-500/50 rounded-lg flex items-center gap-2 text-red-200">
+              <AlertCircle className="w-5 h-5" />
+              <span className="text-sm">{error}</span>
+            </div>
+          )}
+
+          {step === 'signin' && (
+            <div className="p-8">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl mb-4 shadow-lg">
+                  <Shield className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
+                <p className="text-purple-200">Sign in to continue</p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-purple-200 mb-2">Email or Username</label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-300" />
+                    <input
+                      type="text"
+                      value={loginId}
+                      onChange={(e) => setLoginId(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSignIn()}
+                      className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                      placeholder="Enter email or username"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-purple-200 mb-2">Password</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-300" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSignIn()}
+                      className="w-full pl-10 pr-12 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                      placeholder="Enter password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-white transition"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSignIn}
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Signing In...' : 'Sign In'}
+                  {!loading && <ArrowRight className="w-5 h-5" />}
+                </button>
+              </div>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10"></div>
+                </div>
+                  Sign up
+                </button>
+              </p>
+
+              <div className="mt-8 pt-6 border-t border-white/10 text-center space-y-2">
+                <div className="flex items-center justify-center gap-2 text-purple-300 text-sm">
+                  <Shield className="w-4 h-4" />
+                  <span>Secured by SVH Authentication</span>
+                </div>
+                <p className="text-purple-400 text-xs">Protected by reCAPTCHA and bot detection</p>
+              </div>
+            </div>
+          )}
+
+        {step === 'signup' && (
+          <div className="p-8">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl mb-4 shadow-lg">
+                <Mail className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-white mb-2">Create Account</h2>
+              <p className="text-purple-200">Enter your email to get started</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-purple-200 mb-2">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-300" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSignUp()}
+                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                    placeholder="your@email.com"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={handleSignUp}
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Sending...' : 'Send Verification Code'}
+                {!loading && <ArrowRight className="w-5 h-5" />}
+              </button>
+            </div>
+
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10"></div>
+              </div>
+            </p>
+
+            <div className="mt-8 pt-6 border-t border-white/10 text-center space-y-2">
+              <div className="flex items-center justify-center gap-2 text-purple-300 text-sm">
+                <Shield className="w-4 h-4" />
+                <span>Secured by SVH Authentication</span>
+              </div>
+              <p className="text-purple-400 text-xs">Protected by reCAPTCHA and bot detection</p>
+            </div>
+          </div>
+        )}
+
+        {step === 'otp' && (
+          <div className="p-8">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl mb-4 shadow-lg">
+                <Mail className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-white mb-2">Verify Email</h2>
+              <p className="text-purple-200">Enter the 6-digit code sent to</p>
+              <p className="text-white font-semibold mt-1">{email}</p>
+            </div>
+
+            <div className="flex gap-2 justify-center mb-6">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  id={`otp-${index}`}
+                  type="text"
+                  maxLength="1"
+                  value={digit}
+                  onChange={(e) => handleOtpChange(index, e.target.value)}
+                  className="w-12 h-14 text-center text-2xl font-bold bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={handleOtpVerify}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Verifying...' : 'Verify Code'}
+            </button>
+
+            <p className="text-center text-purple-200 mt-4">
+              Didn't receive code?{' '}
+              <button
+                onClick={handleResendOTP}
+                disabled={loading}
+                className="text-purple-300 hover:text-white font-semibold transition disabled:opacity-50"
+              >
+                Resend
+              </button>
+            </p>
+
+            <div className="mt-8 pt-6 border-t border-white/10 text-center space-y-2">
+              <div className="flex items-center justify-center gap-2 text-purple-300 text-sm">
+                <Shield className="w-4 h-4" />
+                <span>Secured by SVH Authentication</span>
+              </div>
+              <p className="text-purple-400 text-xs">Protected by reCAPTCHA and bot detection</p>
+            </div>
+          </div>
+        )}
+
+        {step === 'username' && (
+          <div className="p-8">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl mb-4 shadow-lg">
+                <User className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-white mb-2">Complete Profile</h2>
+              <p className="text-purple-200">Create your username and password</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-purple-200 mb-2">Username</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-300" />
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                    placeholder="Choose a unique username"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-purple-200 mb-2">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-300" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-10 pr-12 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                    placeholder="Create a strong password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-white transition"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-purple-200 mb-2">Confirm Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-300" />
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                    placeholder="Confirm your password"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={handleUsernameSubmit}
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Creating Account...' : 'Complete Registration'}
+              </button>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-white/10 text-center space-y-2">
+              <div className="flex items-center justify-center gap-2 text-purple-300 text-sm">
+                <Shield className="w-4 h-4" />
+                <span>Secured by SVH Authentication</span>
+              </div>
+              <p className="text-purple-400 text-xs">Protected by reCAPTCHA and bot detection</p>
+            </div>
+          </div>
+        )}
+
+        {step === 'complete' && (
+          <div className="p-8 text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full mb-6 shadow-lg">
+              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-3xl font-bold text-white mb-2">All Set!</h2>
+            <p className="text-purple-200 mb-8">Your account has been created successfully</p>
+            <div className="mt-8 pt-6 border-t border-white/10">
+              <div className="flex items-center justify-center gap-2 text-purple-300 text-sm">
+                <Shield className="w-4 h-4" />
+                <span>Secured by SVH Authentication</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+    </div >
+  );
+};
+
+export default AuthUI;

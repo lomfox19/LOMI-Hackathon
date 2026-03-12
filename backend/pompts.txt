@@ -1,0 +1,148 @@
+PROJECT RULES FOR CODE GENERATION
+
+Before generating any code, read the design guidelines located at:
+
+src/design-system/ui-guidelines.md
+
+Follow all design rules defined in that file.
+
+STRICT REQUIREMENTS
+
+1. Do NOT modify existing code, files, or logic in the project.
+2. Do NOT change previously implemented components, APIs, or database schemas.
+3. Only create NEW components, pages, APIs, or services required for the requested feature.
+4. All frontend components must follow the UI theme, color palette, typography, and animation rules from the design guidelines.
+5. Use existing reusable components when possible.
+
+FRONTEND RULES
+
+* Follow the AI SaaS theme defined in the design guidelines.
+* Use React + Tailwind CSS.
+* Use Framer Motion for animations.
+* Maintain consistent layout, spacing, and color system.
+
+BACKEND RULES
+
+* Backend APIs should match the requirements of the new frontend feature.
+* Backend code must integrate with existing APIs without modifying previous routes or logic.
+* Follow the existing backend structure when creating new controllers, routes, or services.
+
+SAFETY RULES
+
+If implementing the requested feature requires modifying existing code:
+
+1. STOP immediately.
+2. Explain what changes are required.
+3. Ask for confirmation before modifying anything.
+
+Never break existing functionality.
+
+If the task cannot be completed without affecting the current system, return the issue instead of modifying the existing environment.
+
+GOAL
+
+Generate only the necessary new files and code required to implement the requested feature while keeping the existing system stable and unchanged.
+
+
+
+
+
+
+befour one
+PROJECT SAFE UI UPDATE TASK
+
+Before making any changes, read the design system file:
+
+src/design-system/ui-guidelines.md
+
+This file defines the required theme, colors, typography, and animations.
+
+OBJECTIVE
+
+Update the existing frontend UI to follow the design system and introduce a new landing page, without modifying any existing backend logic, APIs, or authentication flow.
+
+CURRENT FLOW
+
+Login page → Sign Up → Dashboard
+
+NEW FLOW
+
+Landing Page → Login / Sign Up → Dashboard
+
+REQUIREMENTS
+
+1. Create a new Landing Page component that appears first when the app loads.
+2. The landing page should contain:
+
+   * Project logo placeholder
+   * Welcome headline
+   * “Get Started” button
+3. When the user clicks “Get Started”, navigate to the existing login/sign-in page.
+4. After login or signup, the user must continue to the existing dashboard as before.
+
+DESIGN REQUIREMENTS
+
+All pages must follow the theme defined in:
+
+src/design-system/ui-guidelines.md
+
+This includes:
+
+• color palette
+• typography
+• UI spacing
+• animations
+• AI visual style
+
+Apply the design system to the existing pages:
+
+* Login page
+* Sign Up page
+* Dashboard layout
+
+Only update **visual styling and UI structure**.
+
+SAFETY RULES
+
+1. DO NOT modify backend code.
+2. DO NOT modify API routes.
+3. DO NOT modify authentication logic.
+4. DO NOT change database schemas.
+5. DO NOT rename existing routes or file paths.
+
+Before implementing changes:
+
+• Analyze existing routes
+• Analyze navigation paths
+• Ensure no logic is broken.
+
+If any UI change risks breaking functionality:
+
+STOP and report the issue instead of modifying the code.
+
+CODE CHANGES ALLOWED
+
+You may:
+
+• update Tailwind classes
+• add UI components
+• add landing page component
+• adjust layout structure
+
+You must NOT modify:
+
+• API calls
+• authentication logic
+• backend endpoints
+• data handling functions
+
+GOAL
+
+Update the visual interface to follow the design system while keeping all existing functionality, file paths, and backend integrations unchanged.
+s
+
+
+
+
+
+
