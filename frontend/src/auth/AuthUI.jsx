@@ -5,8 +5,10 @@ import React, { useState } from 'react';
 import { Mail, Lock, User, Shield, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import authService from './authService';
+import { useAuth } from './AuthContext';
 
 const AuthUI = ({ onSuccess, customStyles = {} }) => {
+  const { signin, signup, googleSignIn } = useAuth();
   const [step, setStep] = useState('signin');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -26,7 +28,7 @@ const AuthUI = ({ onSuccess, customStyles = {} }) => {
         setError('');
         setLoading(true);
         // Exchange code for token and authenticate
-        const response = await authService.googleSignIn(codeResponse.access_token);
+        const response = await googleSignIn(codeResponse.access_token);
         if (onSuccess) onSuccess(response.user);
       } catch (err) {
         setError(err.response?.data?.error || 'Google sign-in failed');
@@ -58,7 +60,7 @@ const AuthUI = ({ onSuccess, customStyles = {} }) => {
         setError('Please fill in all fields');
         return;
       }
-      const response = await authService.signin(loginId, password);
+      const response = await signin(loginId, password);
       if (onSuccess) onSuccess(response.user);
     } catch (err) {
       setError(err.response?.data?.error || 'Sign in failed');
@@ -122,7 +124,7 @@ const AuthUI = ({ onSuccess, customStyles = {} }) => {
         setError('Passwords do not match');
         return;
       }
-      const response = await authService.completeSignup(email, username, password);
+      const response = await signup(email, username, password);
       setStep('complete');
       if (onSuccess) {
         setTimeout(() => onSuccess(response.user), 2000);

@@ -19,11 +19,14 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const currentUser = authService.getCurrentUser();
-    if (currentUser) {
-      setUser(currentUser);
-    }
-    setLoading(false);
+    const initAuth = async () => {
+      const currentUser = authService.getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+      }
+      setLoading(false);
+    };
+    initAuth();
   }, []);
 
   const signin = async (loginId, password) => {
@@ -38,6 +41,12 @@ export const AuthProvider = ({ children }) => {
     return response;
   };
 
+  const googleSignIn = async (token) => {
+    const response = await authService.googleSignIn(token);
+    setUser(response.user);
+    return response;
+  };
+
   const signout = () => {
     authService.signout();
     setUser(null);
@@ -47,6 +56,7 @@ export const AuthProvider = ({ children }) => {
     user,
     signin,
     signup,
+    googleSignIn,
     signout,
     isAuthenticated: !!user,
     loading
