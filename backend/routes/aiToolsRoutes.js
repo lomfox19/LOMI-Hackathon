@@ -17,7 +17,7 @@ router.post('/ai/analyze-feedback', authenticate, aiAnalysisController.analyzeFe
 router.post('/ai/generate-insight-report', authenticate, feedbackController.generateInsightReport);
 
 /**
- * Diagnostic Route: Test Gemini API
+ * Diagnostic Route: Test Groq AI
  */
 router.post('/api-key/generate', authenticate, apiKeyController.generateKey);
 router.get('/api-key', authenticate, apiKeyController.getKey);

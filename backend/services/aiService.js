@@ -1,94 +1,111 @@
-// Centralized AI service layer for all AI-related features.
-// This is intentionally provider-agnostic and reads configuration
-// from environment variables so new tools can plug in easily.
+const Groq = require("groq-sdk");
+const dotenv = require('dotenv');
+dotenv.config();
 
-const axios = require('axios');
-
-const AI_PROVIDER = process.env.AI_PROVIDER || 'stub';
-const AI_API_KEY = process.env.AI_API_KEY || process.env.OPENAI_API_KEY || '';
+const AI_API_KEY = process.env.GROQ_API_KEY || '';
+const groq = AI_API_KEY ? new Groq({ apiKey: AI_API_KEY }) : null;
 
 const ensureConfigured = () => {
-  if (AI_PROVIDER === 'stub' || !AI_API_KEY) {
-    // For now we keep a graceful stub that does not call
-    // any external provider until Shailesh provides an API key.
+  if (!AI_API_KEY) {
     return false;
   }
   return true;
 };
 
-// Core chat interface used by chatbot and other conversational tools
+/**
+ * Core chat interface used by chatbot modules
+ */
 async function chatWithAssistant({ userId, message, context = {} }) {
   const isConfigured = ensureConfigured();
 
   if (!isConfigured) {
     return {
       provider: 'stub',
-      message:
-        'AI service is not fully configured yet. Shailesh, please provide the required API key so the real medical AI assistant can be enabled.',
+      message: 'AI intelligence is not fully configured. Please provide the GROQ_API_KEY to enable the VeriFeedback Intelligence Assistant.',
     };
   }
 
-  // Placeholder for real provider integration
-  // Example structure (not active until configured):
-  //
-  // const response = await axios.post(
-  //   'https://api.your-ai-provider.com/chat',
-  //   { message, context },
-  //   { headers: { Authorization: `Bearer ${AI_API_KEY}` } }
-  // );
-  //
-  // return response.data;
+  try {
+    const completion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: "You are the VeriFeedback Intelligence Assistant, an expert in customer feedback analysis and business growth."
+        },
+        {
+          role: "user",
+          content: message
+        }
+      ],
+      model: "llama3-8b-8192",
+    });
 
-  return {
-    provider: AI_PROVIDER,
-    message:
-      'AI provider is marked as configured, but no concrete integration has been implemented yet.',
-  };
+    return {
+      provider: 'groq',
+      message: completion.choices[0]?.message?.content || "No response received."
+    };
+  } catch (err) {
+    console.error("Groq Chat Error:", err);
+    return {
+      provider: 'groq',
+      message: "I encountered an error. Please try again later."
+    };
+  }
 }
 
-// Structured medical symptom analysis interface
+/**
+ * Simplified feedback analysis interface
+ */
 async function analyzeSymptoms({ userId, symptoms, age, gender, notes }) {
   const isConfigured = ensureConfigured();
 
   if (!isConfigured) {
     return {
       provider: 'stub',
-      summary:
-        'This is a placeholder analysis. Shailesh, please connect a real medical AI service by providing an API key.',
+      summary: 'System is running in limited mode. Connect Groq for full intelligence.',
       riskLevel: 'unknown',
       recommendations: [
-        'This system is currently running in demo mode without real medical AI.',
-        'For any urgent or serious symptoms, contact a licensed medical professional immediately.',
+        'VeriFeedback Intelligence Hub is currently awaiting API configuration.',
       ],
       echo: { symptoms, age, gender, notes },
     };
   }
 
-  // Placeholder structure for real integration
-  // const response = await axios.post(
-  //   'https://api.your-ai-provider.com/medical/analyze',
-  //   { symptoms, age, gender, notes },
-  //   { headers: { Authorization: `Bearer ${AI_API_KEY}` } }
-  // );
-  //
-  // return response.data;
+  try {
+    const completion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: "You are a business intelligence assistant analyzing customer feedback patterns."
+        },
+        {
+          role: "user",
+          content: `Analyze this feedback entry: ${symptoms}. Context: ${notes}`
+        }
+      ],
+      model: "llama3-8b-8192",
+    });
 
-  return {
-    provider: AI_PROVIDER,
-    summary:
-      'AI provider is marked as configured, but symptom analysis integration is not implemented yet.',
-    riskLevel: 'unknown',
-    recommendations: [],
-    echo: { symptoms, age, gender, notes },
-  };
+    return {
+      provider: 'groq',
+      summary: completion.choices[0]?.message?.content || "Analysis complete.",
+      riskLevel: 'monitored',
+      recommendations: [],
+      echo: { symptoms, age, gender, notes },
+    };
+  } catch (err) {
+    console.error("Groq Analysis Error:", err);
+    return {
+      provider: 'groq',
+      summary: "Intelligence process interrupted.",
+      riskLevel: 'unknown',
+      recommendations: [],
+      echo: { symptoms, age, gender, notes },
+    };
+  }
 }
-
-// This module is intentionally small and composable so that
-// future AI tools (imaging, report generators, etc.) can add
-// new functions here without touching existing ones.
 
 module.exports = {
   chatWithAssistant,
   analyzeSymptoms,
 };
-

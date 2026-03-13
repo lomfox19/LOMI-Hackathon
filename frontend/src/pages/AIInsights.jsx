@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    BrainCircuit, 
-    FileText, 
-    Download, 
-    Sparkles, 
-    AlertTriangle, 
-    Lightbulb, 
+import {
+    BrainCircuit,
+    FileText,
+    Download,
+    Sparkles,
+    AlertTriangle,
+    Lightbulb,
     ArrowRight,
     Loader2,
     CheckCircle2,
@@ -48,10 +48,10 @@ const AIInsights = () => {
         // Header
         doc.setFillColor(0, 48, 73); // Primary Color
         doc.rect(0, 0, 210, 40, 'F');
-        
+
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(22);
-        doc.text('LOMI Intelligence Report', 20, 20);
+        doc.text('VeriFeedback Intelligence Report', 20, 20);
         doc.setFontSize(10);
         doc.text(`Generated on: ${timestamp}`, 20, 30);
 
@@ -73,7 +73,7 @@ const AIInsights = () => {
         doc.setFontSize(16);
         doc.text('2. Dataset Overview', 20, yPos);
         yPos += 5;
-        
+
         autoTable(doc, {
             startY: yPos,
             head: [['Metric', 'Value']],
@@ -116,9 +116,9 @@ const AIInsights = () => {
         // Footer
         doc.setFontSize(10);
         doc.setTextColor(150, 150, 150);
-        doc.text('LOMI AI - Powered by Gemini Flash', 105, 285, { align: 'center' });
+        doc.text('VeriFeedback AI - Powered by Gemini Flash', 105, 285, { align: 'center' });
 
-        doc.save(`LOMI_Intelligence_Report_${Date.now()}.pdf`);
+        doc.save(`VeriFeedback_Intelligence_Report_${Date.now()}.pdf`);
     };
 
     const containerVariants = {
@@ -154,7 +154,7 @@ const AIInsights = () => {
                     <AlertTriangle className="w-16 h-16 text-red-500 mb-4" />
                     <h3 className="text-xl font-heading font-bold text-ai-primary">Analysis Interrupted</h3>
                     <p className="text-sm text-ai-primary/60 mt-2 mb-6">{error}</p>
-                    <button 
+                    <button
                         onClick={generateReport}
                         className="flex items-center gap-2 px-6 py-3 bg-ai-primary text-white rounded-xl shadow-lg hover:bg-ai-primary/90 transition-all font-medium"
                     >
@@ -197,7 +197,7 @@ const AIInsights = () => {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button 
+                    <button
                         onClick={downloadPDF}
                         disabled={!report}
                         className="flex items-center gap-2 px-6 py-3 bg-ai-primary text-white rounded-xl shadow-lg hover:bg-ai-primary/90 transition-all font-bold disabled:opacity-50"
@@ -210,7 +210,7 @@ const AIInsights = () => {
 
             {report && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    
+
                     {/* 1. Executive Summary */}
                     <motion.div variants={itemVariants} className="md:col-span-2 bg-white/70 backdrop-blur-xl rounded-3xl border border-ai-primary/8 shadow-ai-card p-8 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-ai-secondary/5 rounded-full -mr-20 -mt-20 blur-3xl" />

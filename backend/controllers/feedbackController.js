@@ -23,17 +23,37 @@ exports.uploadFeedback = [
             const feedbackItems = [];
             const results = [];
 
-            // Parse CSV and extract "review" column
+            // Parse CSV and extract feedback column automatically
+            let detectedColumn = null;
             fs.createReadStream(req.file.path)
                 .pipe(csv())
                 .on('data', (data) => {
-                    const reviewText = data['review'] || data['Review'] || data['text'] || data['Text'];
-                    if (reviewText) {
-                        feedbackItems.push(reviewText.trim());
+                    if (!detectedColumn) {
+                        const possibleColumns = ['review', 'review_text', 'feedback', 'comment', 'customer_review', 'reviewMessage', 'text', 'Text', 'Review'];
+                        detectedColumn = possibleColumns.find(col => data[col] !== undefined);
+                        if (detectedColumn) {
+                            console.log("Detected feedback column:", detectedColumn);
+                        }
+                    }
+
+                    if (detectedColumn) {
+                        const reviewText = data[detectedColumn];
+                        if (reviewText && typeof reviewText === 'string') {
+                            const trimmed = reviewText.trim();
+                            if (trimmed.length > 3) {
+                                feedbackItems.push(trimmed);
+                            }
+                        }
                     }
                 })
                 .on('end', async () => {
                     try {
+                        if (!detectedColumn) {
+                            fs.unlinkSync(req.file.path);
+                            return res.status(400).json({ error: 'No valid feedback column detected. Please include a column named review, review_text, or feedback.' });
+                        }
+
+                        console.log(`[Flow] CSV Parsed: ${feedbackItems.length} items found.`);
                         // Analyze each extracted review
                         const analyzedData = await Promise.all(feedbackItems.map(async (text, index) => {
                             const analysis = await nlpService.analyzeSentiment(text);
@@ -95,7 +115,7 @@ exports.analyzeFeedback = async (req, res) => {
 const aiAnalysisService = require('../services/aiAnalysisService');
 
 /**
- * GET Aggregated Insights (Powered by Gemini)
+ * GET Aggregated Insights (Powered by Groq AI)
  */
 exports.getInsights = async (req, res) => {
     try {
@@ -106,25 +126,26 @@ exports.getInsights = async (req, res) => {
         // Collect all feedback text for the AI
         const feedbackTexts = uploadedFeedback.map(f => f.text);
         
-        // Get Deep AI Insights from Gemini
+        // Get Deep AI Insights from Groq AI
+        console.log(`[Flow] Requesting aggregated insights for ${feedbackTexts.length} items...`);
         const aiInsights = await aiAnalysisService.analyzeFeedback(feedbackTexts);
 
         // Map AI response to dashboard structure
         const formattedInsights = {
             totalFeedback: uploadedFeedback.length,
             sentimentDistribution: {
-                positive: aiInsights.sentiment_summary.positive + '%',
-                neutral: aiInsights.sentiment_summary.neutral + '%',
-                negative: aiInsights.sentiment_summary.negative + '%'
+                positive: (aiInsights.sentiment_distribution?.positive || 0) + '%',
+                neutral: (aiInsights.sentiment_distribution?.neutral || 0) + '%',
+                negative: (aiInsights.sentiment_distribution?.negative || 0) + '%'
             },
-            topicDistribution: aiInsights.top_topics.map(topic => ({
+            topicDistribution: (aiInsights.top_customer_issues || []).map(topic => ({
                 name: topic,
-                percentage: (100 / aiInsights.top_topics.length).toFixed(1) // Approximate distribution if not provided
+                percentage: (100 / (aiInsights.top_customer_issues?.length || 1)).toFixed(1) // Approximate distribution if not provided
             })),
-            topCustomerIssue: aiInsights.top_topics[0],
+            topCustomerIssue: aiInsights.top_customer_issues?.[0],
             trend: 'up',
-            globalSummary: aiInsights.insight_summary,
-            recommendations: [aiInsights.recommendation, ...nlpService.generateInsights(uploadedFeedback).recommendations.slice(0, 2)],
+            globalSummary: aiInsights.summary,
+            recommendations: [...(aiInsights.business_recommendations || []).slice(0, 1), ...nlpService.generateInsights(uploadedFeedback).recommendations.slice(0, 2)],
             keywords: aiInsights.keywords || []
         };
 
@@ -213,6 +234,7 @@ exports.getAnalytics = async (req, res) => {
         // Optional: Include AI summary in main stats if needed
         let aiSummary = null;
         try {
+            console.log(`[Flow] Requesting AI summary for last 50 entries...`);
             const texts = uploadedFeedback.map(f => f.text).slice(-50); // Analyze last 50 for speed
             aiSummary = await aiAnalysisService.analyzeFeedback(texts);
         } catch (e) {
@@ -220,12 +242,12 @@ exports.getAnalytics = async (req, res) => {
         }
 
         const sentimentDistribution = [
-            { name: 'Positive', value: aiSummary ? aiSummary.sentiment_summary.positive : Math.round((sentimentCounts.positive / total) * 100) },
-            { name: 'Neutral', value: aiSummary ? aiSummary.sentiment_summary.neutral : Math.round((sentimentCounts.neutral / total) * 100) },
-            { name: 'Negative', value: aiSummary ? aiSummary.sentiment_summary.negative : Math.round((sentimentCounts.negative / total) * 100) }
+            { name: 'Positive', value: aiSummary ? aiSummary.sentiment_distribution.positive : Math.round((sentimentCounts.positive / total) * 100) },
+            { name: 'Neutral', value: aiSummary ? aiSummary.sentiment_distribution.neutral : Math.round((sentimentCounts.neutral / total) * 100) },
+            { name: 'Negative', value: aiSummary ? aiSummary.sentiment_distribution.negative : Math.round((sentimentCounts.negative / total) * 100) }
         ];
 
-        const topicDistribution = (aiSummary ? aiSummary.top_topics.map(t => ({ topic: t, count: Math.ceil(total / 5) })) : topTopics.map(t => ({ topic: t.name, count: t.count })));
+        const topicDistribution = (aiSummary ? (aiSummary.top_customer_issues || []).map(t => ({ topic: t, count: Math.ceil(total / 5) })) : topTopics.map(t => ({ topic: t.name, count: t.count })));
 
         // Extract keywords from all feedback
         const allKeywords = [];

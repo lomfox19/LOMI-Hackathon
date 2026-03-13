@@ -1,29 +1,33 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const Groq = require("groq-sdk");
 const dotenv = require('dotenv');
 dotenv.config();
 
 /**
- * AI Analysis Service using Gemini API
+ * AI Analysis Service using Groq AI
  */
 class AiAnalysisService {
     constructor() {
-        const apiKey = process.env.GEMINI_API_KEY?.trim();
+        const apiKey = process.env.GROQ_API_KEY?.trim();
         
         if (!apiKey) {
-            console.error("❌ GEMINI_API_KEY is missing in environment variables.");
+            console.error("❌ GROQ_API_KEY is missing in environment variables.");
         }
         
         try {
-            this.genAI = new GoogleGenerativeAI(apiKey || 'DUMMY_KEY');
-            this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            console.log("Groq key loaded:", !!process.env.GROQ_API_KEY);
+            this.groq = new Groq({
+                apiKey: apiKey || 'DUMMY_KEY'
+            });
+            // Using llama3-70b-8192 for high-quality intelligence analysis
+            this.model = "llama3-70b-8192";
         } catch (error) {
-            console.error("Failed to initialize Gemini Client:", error);
+            console.error("Failed to initialize Groq Client:", error);
             throw error;
         }
     }
 
     /**
-     * Analyze a list of feedback texts using Gemini
+     * Analyze a list of feedback texts using Groq AI
      * @param {string[]} feedbackList 
      */
     async analyzeFeedback(feedbackList) {
@@ -32,96 +36,129 @@ class AiAnalysisService {
                 return null;
             }
 
+            console.log("Sending feedback to Groq AI...");
+            
             const prompt = `
-                Perform a comprehensive NLP analysis on the following customer feedback entries. 
-                Return a structured JSON object containing:
-                1. "sentiment_summary": An object with "positive", "negative", and "neutral" percentages (totaling 100).
-                2. "top_topics": An array of the top 3-5 detected topics/issues (e.g., "delivery delay").
-                3. "insight_summary": A concise business insight summarizing the general mood and main points.
-                4. "recommendation": A specific business action to improve customer satisfaction.
-                5. "keywords": An array of the most significant 8-12 keywords extracted from the text.
+                You are an AI business intelligence assistant for a Customer Feedback Analytics Platform.
+                Your job is to analyze customer reviews and extract meaningful insights for businesses.
 
-                Feedback Entries:
+                Analyze the following customer feedback dataset meticulously and generate structured insights.
+
+                Provide the analysis in JSON format with the following sections:
+                1. "sentiment_distribution": { "positive": percentage, "neutral": percentage, "negative": percentage } (total must be 100).
+                2. "top_customer_issues": Array of the most common complaints mentioned by customers.
+                3. "positive_feedback_themes": Array of common positive experiences customers mention.
+                4. "business_risks": Array of potential risks or recurring problems.
+                5. "business_recommendations": Array of clear recommendations for improving customer experience.
+                6. "strategic_insights": Array of long-term improvements businesses should consider.
+                7. "summary": A short executive summary explaining what the feedback reveals.
+                8. "keywords": Array of 10-12 most significant industry-specific keywords.
+
+                Dataset:
                 ${feedbackList.map((text, i) => `${i + 1}. "${text}"`).join("\n")}
 
-                Output EXACTLY and ONLY the JSON object.
+                Output EXACTLY and ONLY a valid JSON object. Do not include markdown formatting or extra text.
             `;
 
-            const result = await this.model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text();
+            const completion = await this.groq.chat.completions.create({
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are an AI business intelligence assistant that analyzes customer feedback. You must output results in EXACT JSON format."
+                    },
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ],
+                model: this.model,
+                response_format: { type: "json_object" }
+            });
 
-            // Extract JSON from the response (sometimes Gemini wraps JSON in markdown blocks)
-            const jsonMatch = text.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) {
-                throw new Error("Failed to extract JSON from AI response");
+            console.log("Groq response received:", JSON.stringify(completion.choices[0]?.message?.content).substring(0, 100) + "...");
+            const text = completion.choices[0]?.message?.content;
+
+            if (!text) {
+                throw new Error("Empty response from Groq AI");
             }
 
-            return JSON.parse(jsonMatch[0]);
+            return JSON.parse(text);
         } catch (error) {
-            console.error("AI Analysis Error:", error);
+            console.error("Groq AI Analysis Error:", error);
             throw error;
         }
     }
 
     /**
-     * Generate a full business intelligence report
+     * Generate a full business intelligence report using Groq AI
      * @param {string[]} feedbackList 
      * @param {Object} analyticsSummary
      */
     async generateInsightReport(feedbackList, analyticsSummary) {
         try {
+            console.log("Sending feedback to Groq AI for full intelligence report...");
+            
             const prompt = `
-                Generate a professional Business Intelligence Report based on the following customer feedback data and analytics.
+                You are the Chief Intelligence Officer. Generate a professional Strategic Business Intelligence Report based on the following verified customer feedback aggregates.
                 
-                Data Summary:
-                - Total Feedback: ${analyticsSummary.totalFeedback}
+                Data Context:
+                - Total Feedback Samples: ${analyticsSummary.totalFeedback}
                 - Sentiment Breakdown: Positive ${analyticsSummary.sentimentCounts.positive}, Neutral ${analyticsSummary.sentimentCounts.neutral}, Negative ${analyticsSummary.sentimentCounts.negative}
-                - Top Topics: ${analyticsSummary.topTopics.map(t => t.name).join(", ")}
+                - Core Topics Identified: ${analyticsSummary.topTopics.map(t => t.name).join(", ")}
 
-                Feedback Samples:
-                ${feedbackList.slice(0, 20).map((text, i) => `${i + 1}. "${text}"`).join("\n")}
+                Sample Raw Voices:
+                ${feedbackList.slice(0, 25).map((text, i) => `${i + 1}. "${text}"`).join("\n")}
 
                 Return a structured JSON object with EXACTLY these keys:
-                1. "executiveSummary": A paragraph summarizing the overall customer mood and main feedback themes.
-                2. "keyBusinessProblems": An array of 3-5 major pain points identified.
-                3. "businessRecommendations": An array of 3-5 actionable steps for the business.
-                4. "futureStrategy": An array of 3-5 long-term strategic growth suggestions.
+                1. "executiveSummary": A high-level overview of brand perception, major wins, and critical friction points.
+                2. "keyBusinessProblems": Array of 3-5 structural or operational problems impacting the bottom line.
+                3. "businessRecommendations": Array of 3-5 immediate tactical recommendations to improve retention.
+                4. "futureStrategy": Array of 5 strategic roadmap suggestions to leverage positive themes and mitigate long-term risks.
 
                 Output ONLY the JSON object.
             `;
 
-            const result = await this.model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text();
+            const completion = await this.groq.chat.completions.create({
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are an AI business intelligence lead. You provide high-level strategic reports based on data. Output only JSON."
+                    },
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ],
+                model: this.model,
+                response_format: { type: "json_object" }
+            });
 
-            // Clean the response text (remove markdown code blocks if present)
-            const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            const jsonMatch = cleanJson.match(/\{[\s\S]*\}/);
-            
-            if (!jsonMatch) throw new Error("Failed to extract JSON from AI response");
+            const text = completion.choices[0]?.message?.content;
+            console.log("Groq intelligence report received");
 
-            return JSON.parse(jsonMatch[0]);
+            if (!text) throw new Error("Empty report response from Groq AI");
+
+            return JSON.parse(text);
         } catch (error) {
-            console.error("AI Report Generation Error:", error);
+            console.error("Groq AI Report Generation Error:", error);
             
-            // Fallback: Return a structured mock report if AI fails
+            // Fallback: Maintain stable dashboard experience if AI fails
             return {
-                executiveSummary: "Due to high safety filtering or technical limitations, a detailed AI summary could not be generated at this time. However, statistical analysis shows active customer engagement.",
+                executiveSummary: "Strategic intelligence synthesis is currently unavailable. Statistical overview shows consistent customer interaction across the dataset.",
                 keyBusinessProblems: [
-                    "Data processing limitations detected",
-                    "Safety filters blocked specific feedback analysis",
-                    "Check source datasets for anomalies"
+                    "Intelligence engine rate limit or timeout",
+                    "Safety filters active on source data",
+                    "High volume data processing latency"
                 ],
                 businessRecommendations: [
-                    "Review raw feedback manually for sensitive content",
-                    "Verify Gemini API quota and availability",
-                    "Try subdividing the dataset for processing"
+                    "Review negative sentiment clusters manually",
+                    "Optimize data batching for AI processing",
+                    "Verify connectivity with Groq intelligence cloud"
                 ],
                 futureStrategy: [
-                    "Implement multi-layer data sanitization",
-                    "Scale intelligence processing batches",
-                    "Enable localized NLP fallback models"
+                    "Scale intelligence nodes for larger datasets",
+                    "Implement localized sentiment fallback",
+                    "Enhance data pre-processing pipelines"
                 ],
                 isFallback: true
             };

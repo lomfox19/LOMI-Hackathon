@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Key, 
-  Terminal, 
-  Copy, 
-  Check, 
-  RefreshCcw, 
-  Trash2, 
-  Code2,
-  FileCode,
-  Globe,
-  Lock,
-  Zap,
-  Cpu,
-  Layers
+import {
+    Key,
+    Terminal,
+    Copy,
+    Check,
+    RefreshCcw,
+    Trash2,
+    Code2,
+    FileCode,
+    Globe,
+    Lock,
+    Zap,
+    Cpu,
+    Layers
 } from 'lucide-react';
 import apiClient from '../api/client';
 
@@ -71,7 +71,7 @@ const ApiAccess = () => {
         }
     };
 
-    const apiUsageExample = `curl -X POST https://api.lomi.ai/v1/analyze-feedback \\
+    const apiUsageExample = `curl -X POST https://api.VeriFeedback.ai/v1/analyze-feedback \\
   -H "x-api-key: ${apiKey || 'YOUR_API_KEY'}" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -89,7 +89,7 @@ const ApiAccess = () => {
                     Business API Access
                 </h2>
                 <p className="text-sm text-ai-primary/50 mt-1 font-medium italic">
-                    Seamlessly integrate LOMI's neural analysis models into your business workflow.
+                    Seamlessly integrate VeriFeedback's neural analysis models into your business workflow.
                 </p>
             </div>
 
@@ -97,7 +97,7 @@ const ApiAccess = () => {
                 {/* Management Column */}
                 <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Key Generation Section */}
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         className="bg-white/60 backdrop-blur-xl rounded-xl-card border border-ai-primary/8 shadow-ai-card p-8 flex flex-col justify-between"
@@ -112,7 +112,7 @@ const ApiAccess = () => {
                                 <div className="space-y-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-ai-primary/40 uppercase tracking-widest ml-1">Project Identifier</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             value={projectName}
                                             onChange={(e) => setProjectName(e.target.value)}
@@ -137,7 +137,7 @@ const ApiAccess = () => {
                                         <div className="p-4 bg-ai-bg/70 border border-ai-primary/10 rounded-xl font-mono text-xs text-ai-primary font-bold break-all pr-12">
                                             {apiKey}
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={copyToClipboard}
                                             className="absolute top-1/2 right-3 -translate-y-1/2 p-2 rounded-lg bg-ai-primary text-white hover:bg-ai-secondary transition-colors"
                                         >
@@ -156,7 +156,7 @@ const ApiAccess = () => {
                     </motion.div>
 
                     {/* Example Usage / Documentation */}
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         className="bg-ai-primary rounded-xl-card border border-white/5 shadow-ai-card p-8 text-white relative overflow-hidden"
@@ -164,13 +164,13 @@ const ApiAccess = () => {
                         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
                             <Code2 className="w-32 h-32" />
                         </div>
-                        
+
                         <div className="relative z-10 space-y-6">
                             <div className="flex items-center gap-2">
                                 <Terminal className="w-4 h-4 text-ai-secondary" />
                                 <h3 className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Global Endpoint Implementation</h3>
                             </div>
-                            
+
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3">
                                     <div className="px-3 py-1 bg-ai-secondary text-white rounded-lg text-[10px] font-bold uppercase">POST</div>

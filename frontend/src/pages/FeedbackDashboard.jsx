@@ -40,13 +40,13 @@ import { useAuth } from '../auth/AuthContext';
    ──────────────────────────────────────────── */
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'feedback',  label: 'Feedback',  icon: MessageSquareText },
+  { id: 'feedback', label: 'Feedback', icon: MessageSquareText },
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'insights',  label: 'AI Insights', icon: BrainCircuit },
-  { id: 'fraud',     label: 'Fraud Detection', icon: ShieldAlert },
-  { id: 'spam',      label: 'Spam Detection',  icon: ShieldBan },
-  { id: 'api',       label: 'API Access',      icon: Terminal },
-  { id: 'settings',  label: 'Settings',  icon: Settings },
+  { id: 'insights', label: 'AI Insights', icon: BrainCircuit },
+  { id: 'fraud', label: 'Fraud Detection', icon: ShieldAlert },
+  { id: 'spam', label: 'Spam Detection', icon: ShieldBan },
+  { id: 'api', label: 'API Access', icon: Terminal },
+  { id: 'settings', label: 'Settings', icon: Settings },
 ];
 /* ────────────────────────────────────────────
    Animated neural-dot background (AI visual cue)
@@ -169,9 +169,9 @@ const FeedbackDashboard = ({ user, onLogout }) => {
         {/* ── Sidebar ── */}
         <motion.aside
           initial={false}
-          animate={{ 
+          animate={{
             x: mobileSidebarOpen ? 0 : (window.innerWidth < 1024 ? -280 : 0),
-            width: sidebarCollapsed ? 72 : 260 
+            width: sidebarCollapsed ? 72 : 260
           }}
           transition={{ type: 'spring', stiffness: 260, damping: 28 }}
           className={`fixed lg:sticky top-0 left-0 h-screen z-50 flex flex-col
@@ -200,7 +200,7 @@ const FeedbackDashboard = ({ user, onLogout }) => {
                     className="min-w-0"
                   >
                     <h1 className="text-sm font-heading font-bold text-ai-primary leading-tight truncate">
-                      LOMI
+                      VeriFeedback
                       <span className="block text-[8px] uppercase tracking-wider text-ai-secondary font-body">
                         Intelligence Hub
                       </span>
@@ -209,7 +209,7 @@ const FeedbackDashboard = ({ user, onLogout }) => {
                 )}
               </AnimatePresence>
             </div>
-            
+
             {/* Mobile Close Button */}
             <motion.button
               whileTap={{ scale: 0.9 }}
@@ -231,10 +231,9 @@ const FeedbackDashboard = ({ user, onLogout }) => {
                   whileTap={{ scale: 0.97 }}
                   className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
                     transition-colors duration-200 group
-                    ${
-                      isActive
-                        ? 'bg-ai-primary text-white shadow-md shadow-ai-primary/25'
-                        : 'text-ai-primary/60 hover:bg-ai-primary/5 hover:text-ai-primary'
+                    ${isActive
+                      ? 'bg-ai-primary text-white shadow-md shadow-ai-primary/25'
+                      : 'text-ai-primary/60 hover:bg-ai-primary/5 hover:text-ai-primary'
                     }`}
                 >
                   <Icon className="w-[18px] h-[18px] shrink-0" />
@@ -380,7 +379,7 @@ const FeedbackDashboard = ({ user, onLogout }) => {
                 exit={{ opacity: 0, y: -16 }}
                 transition={{ duration: 0.35, ease: 'easeOut' }}
                 className="h-full space-y-8 min-h-[600px]"
-              > 
+              >
                 {activeSection === 'dashboard' ? (
                   <>
                     {/* Top Metrics Row */}
@@ -424,7 +423,7 @@ const FeedbackDashboard = ({ user, onLogout }) => {
                       {/* Left Column: Upload & Live Feed */}
                       <div className="lg:col-span-8 space-y-8">
                         <UploadFeedback onUploadSuccess={fetchDashboardStats} />
-                        
+
                         {/* Feed Intelligence Data Stream */}
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
@@ -449,11 +448,10 @@ const FeedbackDashboard = ({ user, onLogout }) => {
                                     transition={{ delay: i * 0.05 }}
                                     className="p-4 rounded-xl bg-white/60 border border-ai-primary/5 flex items-start gap-4 text-left group hover:border-ai-secondary/20 transition-colors"
                                   >
-                                    <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
-                                      item.sentiment === 'positive' ? 'bg-ai-secondary shadow-[0_0_8px_rgba(46,125,91,0.5)]' :
-                                      item.sentiment === 'negative' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' :
-                                      'bg-ai-primary/30'
-                                    }`} />
+                                    <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${item.sentiment === 'positive' ? 'bg-ai-secondary shadow-[0_0_8px_rgba(46,125,91,0.5)]' :
+                                        item.sentiment === 'negative' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' :
+                                          'bg-ai-primary/30'
+                                      }`} />
                                     <div className="min-w-0">
                                       <p className="text-sm text-ai-primary/80 line-clamp-2 leading-relaxed">{item.text}</p>
                                       <div className="flex items-center gap-3 mt-2">
