@@ -1,0 +1,440 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  BarChart3,
+  MessageSquareText,
+  LayoutDashboard,
+  Settings,
+  LogOut,
+  User,
+  BrainCircuit,
+  Sparkles,
+  TrendingUp,
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
+import { useAuth } from '../auth/AuthContext';
+
+/* ────────────────────────────────────────────
+   Sidebar navigation items
+   ──────────────────────────────────────────── */
+const navItems = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'feedback',  label: 'Feedback',  icon: MessageSquareText },
+  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+  { id: 'insights',  label: 'AI Insights', icon: BrainCircuit },
+  { id: 'settings',  label: 'Settings',  icon: Settings },
+];
+
+/* ────────────────────────────────────────────
+   Animated neural-dot background (AI visual cue)
+   ──────────────────────────────────────────── */
+const NeuralBackground = () => (
+  <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    {/* Large gradient blobs */}
+    <motion.div
+      className="absolute -top-32 -right-16 w-[420px] h-[420px] rounded-full"
+      style={{
+        background:
+          'radial-gradient(circle, rgba(46,125,91,0.12) 0%, rgba(46,125,91,0.03) 60%, transparent 80%)',
+      }}
+      animate={{ scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }}
+      transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+    />
+    <motion.div
+      className="absolute -bottom-32 -left-16 w-[380px] h-[380px] rounded-full"
+      style={{
+        background:
+          'radial-gradient(circle, rgba(15,61,46,0.10) 0%, rgba(15,61,46,0.02) 60%, transparent 80%)',
+      }}
+      animate={{ scale: [1, 1.06, 1], opacity: [0.6, 1, 0.6] }}
+      transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+    />
+
+    {/* Floating AI pulse dots */}
+    {[...Array(6)].map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute w-2 h-2 rounded-full bg-ai-secondary/20"
+        style={{
+          top: `${15 + i * 14}%`,
+          left: `${10 + ((i * 17) % 80)}%`,
+        }}
+        animate={{
+          y: [0, -12, 0],
+          opacity: [0.3, 0.7, 0.3],
+          scale: [1, 1.4, 1],
+        }}
+        transition={{
+          duration: 3 + i * 0.6,
+          repeat: Infinity,
+          delay: i * 0.4,
+          ease: 'easeInOut',
+        }}
+      />
+    ))}
+
+    {/* Subtle circuit lines */}
+    <svg
+      className="absolute top-0 left-0 w-full h-full opacity-[0.03]"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <pattern id="circuit" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+        <path d="M0 60h40M60 0v40M80 60h40M60 80v40" stroke="#0F3D2E" strokeWidth="1" fill="none" />
+        <circle cx="60" cy="60" r="3" fill="#0F3D2E" />
+        <circle cx="40" cy="60" r="2" fill="#2E7D5B" />
+        <circle cx="80" cy="60" r="2" fill="#2E7D5B" />
+        <circle cx="60" cy="40" r="2" fill="#2E7D5B" />
+        <circle cx="60" cy="80" r="2" fill="#2E7D5B" />
+      </pattern>
+      <rect width="100%" height="100%" fill="url(#circuit)" />
+    </svg>
+  </div>
+);
+
+/* ────────────────────────────────────────────
+   Main Feedback Dashboard Component
+   ──────────────────────────────────────────── */
+const FeedbackDashboard = ({ user, onLogout }) => {
+  const [activeSection, setActiveSection] = useState('dashboard');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { signout } = useAuth();
+
+  const handleNavClick = (id) => {
+    setActiveSection(id);
+  };
+
+  const handleLogout = () => {
+    signout();
+    if (onLogout) onLogout();
+  };
+
+  return (
+    <div className="min-h-screen bg-ai-bg font-body text-ai-primary relative overflow-hidden">
+      <NeuralBackground />
+
+      <div className="relative flex min-h-screen">
+        {/* ── Sidebar ── */}
+        <motion.aside
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1, width: sidebarCollapsed ? 72 : 260 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+          className="fixed lg:sticky top-0 left-0 h-screen z-30 flex flex-col
+                     backdrop-blur-2xl bg-white/75 border-r border-ai-primary/8
+                     shadow-[4px_0_24px_rgba(15,61,46,0.06)]"
+        >
+          {/* Brand header */}
+          <div className="flex items-center gap-3 px-4 py-5 border-b border-ai-primary/8">
+            <motion.div
+              whileHover={{ rotate: 8, scale: 1.08 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+              className="shrink-0 flex items-center justify-center w-10 h-10 rounded-xl
+                         bg-gradient-to-br from-ai-primary to-ai-secondary shadow-lg text-white"
+            >
+              <BrainCircuit className="w-5 h-5" />
+            </motion.div>
+
+            <AnimatePresence>
+              {!sidebarCollapsed && (
+                <motion.div
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className="min-w-0"
+                >
+                  <h1 className="text-sm font-heading font-bold text-ai-primary leading-tight truncate">
+                    Feedback Intelligence
+                  </h1>
+                  <p className="text-[10px] text-ai-primary/50 font-medium tracking-wide uppercase">
+                    AI Platform
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+            {navItems.map(({ id, label, icon: Icon }) => {
+              const isActive = activeSection === id;
+              return (
+                <motion.button
+                  key={id}
+                  onClick={() => handleNavClick(id)}
+                  whileHover={{ x: 3 }}
+                  whileTap={{ scale: 0.97 }}
+                  className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+                    transition-colors duration-200 group
+                    ${
+                      isActive
+                        ? 'bg-ai-primary text-white shadow-md shadow-ai-primary/25'
+                        : 'text-ai-primary/60 hover:bg-ai-primary/5 hover:text-ai-primary'
+                    }`}
+                >
+                  <Icon className="w-[18px] h-[18px] shrink-0" />
+                  <AnimatePresence>
+                    {!sidebarCollapsed && (
+                      <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="truncate"
+                      >
+                        {label}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Active glow indicator */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-glow"
+                      className="absolute inset-0 rounded-xl bg-ai-primary/10"
+                      style={{ zIndex: -1 }}
+                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                </motion.button>
+              );
+            })}
+          </nav>
+
+          {/* User info + Logout */}
+          <div className="px-3 pb-4 space-y-2 border-t border-ai-primary/8 pt-3">
+            {user && !sidebarCollapsed && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="px-3 py-2.5 rounded-xl bg-ai-primary/[0.03] border border-ai-primary/8"
+              >
+                <p className="text-xs font-semibold text-ai-primary flex items-center gap-1.5 truncate">
+                  <User className="w-3.5 h-3.5 shrink-0" />
+                  {user.username || user.email}
+                </p>
+                {user.email && (
+                  <p className="text-[10px] text-ai-primary/50 truncate mt-0.5 pl-5">
+                    {user.email}
+                  </p>
+                )}
+              </motion.div>
+            )}
+
+            <motion.button
+              whileHover={{ x: 3 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+                         text-red-500/80 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
+            >
+              <LogOut className="w-[18px] h-[18px] shrink-0" />
+              <AnimatePresence>
+                {!sidebarCollapsed && (
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    Logout
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          </div>
+
+          {/* Collapse toggle */}
+          <button
+            onClick={() => setSidebarCollapsed((prev) => !prev)}
+            className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full
+                       bg-white border border-ai-primary/10 shadow-sm flex items-center justify-center
+                       text-ai-primary/50 hover:text-ai-primary hover:shadow-md
+                       transition-all duration-200 z-40"
+          >
+            {sidebarCollapsed ? (
+              <ChevronRight className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronLeft className="w-3.5 h-3.5" />
+            )}
+          </button>
+        </motion.aside>
+
+        {/* ── Main Content Area ── */}
+        <main className="flex-1 flex flex-col min-h-screen">
+          {/* Top bar */}
+          <motion.header
+            initial={{ y: -12, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.15, duration: 0.5 }}
+            className="sticky top-0 z-20 backdrop-blur-xl bg-white/60 border-b border-ai-primary/6
+                       px-6 lg:px-8 py-4 flex items-center justify-between"
+          >
+            <div>
+              <h2 className="text-xl lg:text-2xl font-heading font-bold text-ai-primary flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-ai-secondary" />
+                Customer Feedback Intelligence Dashboard
+              </h2>
+              <p className="text-xs text-ai-primary/50 mt-0.5 font-medium">
+                AI-powered insights at a glance
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* Notification bell with pulse */}
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative p-2 rounded-xl bg-white/80 border border-ai-primary/8
+                           hover:shadow-md transition-shadow duration-200"
+              >
+                <Bell className="w-4.5 h-4.5 text-ai-primary/60" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-ai-secondary animate-pulse" />
+              </motion.button>
+
+              {/* User avatar */}
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="w-9 h-9 rounded-xl bg-gradient-to-br from-ai-primary to-ai-secondary
+                           flex items-center justify-center text-white text-sm font-bold shadow-md cursor-pointer"
+              >
+                {(user?.username || user?.email || 'U').charAt(0).toUpperCase()}
+              </motion.div>
+            </div>
+          </motion.header>
+
+          {/* Dashboard content */}
+          <div className="flex-1 px-6 lg:px-8 py-6 lg:py-8">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSection}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.35, ease: 'easeOut' }}
+                className="h-full"
+              >
+                {/* Empty state placeholder */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mb-6">
+                  {/* Quick stat cards (placeholders) */}
+                  {[
+                    {
+                      title: 'Total Feedback',
+                      value: '—',
+                      sub: 'Coming soon',
+                      icon: MessageSquareText,
+                      gradient: 'from-ai-primary/10 to-ai-secondary/5',
+                    },
+                    {
+                      title: 'Avg. Sentiment',
+                      value: '—',
+                      sub: 'AI analysis pending',
+                      icon: TrendingUp,
+                      gradient: 'from-ai-secondary/10 to-emerald-50',
+                    },
+                    {
+                      title: 'AI Insights',
+                      value: '—',
+                      sub: 'Module loading',
+                      icon: BrainCircuit,
+                      gradient: 'from-amber-50 to-ai-primary/5',
+                    },
+                  ].map((card, i) => (
+                    <motion.div
+                      key={card.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 + i * 0.1, duration: 0.45 }}
+                      whileHover={{ y: -4, boxShadow: '0 20px 50px rgba(15,61,46,0.12)' }}
+                      className={`relative overflow-hidden rounded-xl-card p-5
+                                  bg-gradient-to-br ${card.gradient}
+                                  backdrop-blur-md border border-ai-primary/8
+                                  shadow-ai-card transition-shadow duration-300 cursor-default`}
+                    >
+                      {/* Inner glow accent */}
+                      <div className="absolute top-0 right-0 w-24 h-24 rounded-full
+                                      bg-ai-secondary/5 blur-2xl -translate-y-1/2 translate-x-1/2" />
+
+                      <div className="flex items-start justify-between relative z-10">
+                        <div>
+                          <p className="text-xs font-semibold text-ai-primary/50 uppercase tracking-wider">
+                            {card.title}
+                          </p>
+                          <p className="text-3xl font-heading font-bold text-ai-primary mt-1">
+                            {card.value}
+                          </p>
+                          <p className="text-[11px] text-ai-primary/40 mt-1 font-medium">
+                            {card.sub}
+                          </p>
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-white/60 border border-ai-primary/6 shadow-sm">
+                          <card.icon className="w-5 h-5 text-ai-secondary" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Large empty dashboard area */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.5, duration: 0.5 }}
+                  className="relative rounded-xl-card border border-ai-primary/8
+                             bg-white/60 backdrop-blur-xl shadow-ai-card
+                             min-h-[380px] flex flex-col items-center justify-center p-8"
+                >
+                  {/* Decorative neural ring */}
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+                    className="absolute w-64 h-64 rounded-full border border-dashed border-ai-primary/6"
+                  />
+                  <motion.div
+                    animate={{ rotate: -360 }}
+                    transition={{ duration: 45, repeat: Infinity, ease: 'linear' }}
+                    className="absolute w-48 h-48 rounded-full border border-dashed border-ai-secondary/8"
+                  />
+
+                  {/* Center icon */}
+                  <motion.div
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                    className="relative z-10 w-20 h-20 rounded-2xl
+                               bg-gradient-to-br from-ai-primary to-ai-secondary
+                               flex items-center justify-center shadow-lg shadow-ai-primary/20 mb-5"
+                  >
+                    <LayoutDashboard className="w-9 h-9 text-white" />
+                    {/* Glow ring */}
+                    <div className="absolute inset-0 rounded-2xl bg-ai-secondary/20 blur-xl -z-10" />
+                  </motion.div>
+
+                  <h3 className="text-xl font-heading font-bold text-ai-primary text-center relative z-10">
+                    Customer Feedback Intelligence Dashboard
+                  </h3>
+                  <p className="text-sm text-ai-primary/45 mt-2 max-w-md text-center leading-relaxed relative z-10">
+                    Your AI-powered command centre for customer insights is being prepared.
+                    Modules will appear here as they are activated.
+                  </p>
+
+                  {/* Animated AI status bar */}
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: '160px' }}
+                    transition={{ delay: 0.8, duration: 1.5, ease: 'easeOut' }}
+                    className="h-1 rounded-full bg-gradient-to-r from-ai-primary via-ai-secondary to-ai-primary/30
+                               mt-6 relative z-10"
+                  />
+                  <p className="text-[10px] text-ai-primary/30 mt-2 tracking-wider uppercase font-semibold relative z-10">
+                    System Initialising
+                  </p>
+                </motion.div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default FeedbackDashboard;

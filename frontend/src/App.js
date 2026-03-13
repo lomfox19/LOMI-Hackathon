@@ -2,7 +2,7 @@ import './App.css';
 import React, { useState } from 'react';
 import { AuthProvider } from './auth/AuthContext';
 import AuthUI from './auth/AuthUI';
-import Dashboard from './pages/Dashboard';
+import FeedbackDashboard from './pages/FeedbackDashboard';
 import Landing from './pages/Landing';
 
 function App() {
@@ -30,7 +30,7 @@ function App() {
   return (
     <AuthProvider>
       {isAuthenticated ? (
-        <Dashboard user={user} onLogout={handleLogout} />
+        <FeedbackDashboard user={user} onLogout={handleLogout} />
       ) : showLanding ? (
         <Landing onGetStarted={handleGetStarted} />
       ) : (

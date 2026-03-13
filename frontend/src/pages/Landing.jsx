@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 const Landing = ({ onGetStarted }) => {
   return (
     <div className="min-h-screen bg-ai-bg text-ai-primary flex items-center justify-center px-6 py-10 font-body relative overflow-hidden">
+      
       {/* Subtle AI background accents */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-32 -right-24 w-80 h-80 bg-gradient-to-br from-ai-secondary/10 via-ai-secondary/5 to-transparent rounded-full blur-3xl" />
@@ -15,6 +16,7 @@ const Landing = ({ onGetStarted }) => {
       </div>
 
       <div className="relative max-w-6xl w-full grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] items-center">
+
         {/* Left: Logo + copy */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -22,25 +24,27 @@ const Landing = ({ onGetStarted }) => {
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="space-y-10"
         >
+
           <div className="inline-flex items-center gap-3 rounded-full bg-white/70 px-4 py-2 shadow-sm border border-ai-primary/10">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-ai-primary text-white shadow-md">
               <Sparkles className="w-4 h-4" />
             </span>
             <p className="text-xs font-medium tracking-wide text-ai-primary/80">
-              Intelligent, secure, AI-powered medical assistant
+              AI-powered feedback intelligence platform
             </p>
           </div>
 
           <div className="space-y-5">
             <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl leading-tight text-ai-primary">
-              Your trusted
+              Turn customer feedback
               <span className="block text-ai-secondary">
-                AI Medical Companion
+                into powerful business insights
               </span>
             </h1>
+
             <p className="max-w-xl text-base sm:text-lg text-ai-primary/75">
-              Securely explore symptoms, understand your medical data, and chat with an AI assistant designed for healthcare insights.
-              Authentication is powered by SVH to keep your data safe.
+              Automatically analyze reviews, surveys, and social media feedback using AI and Natural Language Processing.
+              Detect sentiment, discover key topics, and generate meaningful insights that help businesses improve decisions.
             </p>
           </div>
 
@@ -51,13 +55,13 @@ const Landing = ({ onGetStarted }) => {
               onClick={onGetStarted}
               className="inline-flex items-center justify-center rounded-[999px] bg-ai-primary text-white px-7 py-3 text-sm sm:text-base font-semibold shadow-lg shadow-ai-primary/30 hover:bg-ai-hover transition-colors"
             >
-              Get Started
+              Start Analyzing Feedback
               <ArrowRight className="w-4 h-4 ml-2" />
             </motion.button>
 
             <div className="text-xs sm:text-sm text-ai-primary/70">
-              <p className="font-medium">No data is shared without your control.</p>
-              <p>Continue to secure login to access your dashboard.</p>
+              <p className="font-medium">Understand what your customers truly feel.</p>
+              <p>Transform raw feedback into clear business insights.</p>
             </div>
           </div>
         </motion.div>
@@ -70,72 +74,82 @@ const Landing = ({ onGetStarted }) => {
           className="relative"
         >
           <div className="relative rounded-xl-card bg-white/70 backdrop-blur-xl border border-ai-primary/10 shadow-ai-card px-6 py-7 sm:px-8 sm:py-9 overflow-hidden">
+            
             <div className="absolute -top-16 -right-10 h-40 w-40 rounded-full bg-gradient-to-br from-ai-secondary/40 via-ai-secondary/0 to-transparent blur-3xl" />
             <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-gradient-to-tr from-ai-primary/40 via-ai-primary/0 to-transparent blur-3xl" />
 
             <div className="relative space-y-6">
+
               {/* Logo placeholder */}
               <div className="flex items-center gap-3">
                 <div className="h-11 w-11 rounded-2xl bg-ai-primary flex items-center justify-center text-white font-semibold shadow-md">
-                  MA
+                  AI
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.18em] text-ai-primary/60">
-                    Project Logo
+                    Platform
                   </p>
                   <p className="text-sm font-semibold text-ai-primary">
-                    Medical AI Assistant
+                    Feedback Insight Engine
                   </p>
                 </div>
               </div>
 
-              {/* Neural network style visual */}
+              {/* AI insight preview */}
               <div className="relative rounded-xl-card bg-ai-bg/60 border border-ai-primary/10 p-4 sm:p-5">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_0,#2E7D5B22,transparent_55%),radial-gradient(circle_at_100%_80%,#0F3D2E1A,transparent_55%)] opacity-80" />
+                
                 <div className="relative space-y-3">
                   <p className="text-xs font-medium tracking-wide text-ai-primary/70">
-                    Live AI Insight Preview
+                    Live AI Feedback Analysis
                   </p>
+
                   <p className="text-sm text-ai-primary/80">
-                    “Based on your described symptoms, I&apos;ll highlight potential
-                    areas of concern and guide you with questions your clinician
-                    might ask.”
+                    “Customers are mostly satisfied with product quality,
+                    but many reviews highlight delays in delivery and
+                    customer support response time.”
                   </p>
+
                   <div className="flex flex-wrap gap-2 text-[11px]">
                     <span className="px-3 py-1 rounded-full bg-white/70 text-ai-primary/80 border border-ai-primary/10">
-                      Symptom clustering
+                      Sentiment detection
                     </span>
+
                     <span className="px-3 py-1 rounded-full bg-white/70 text-ai-primary/80 border border-ai-primary/10">
-                      Risk hints
+                      Topic extraction
                     </span>
+
                     <span className="px-3 py-1 rounded-full bg-white/70 text-ai-primary/80 border border-ai-primary/10">
-                      Follow‑up questions
+                      Insight generation
                     </span>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-[11px] text-ai-primary/70">
+                
                 <div className="rounded-xl bg-white/80 border border-ai-primary/10 px-3 py-2">
                   <p className="font-semibold text-xs text-ai-primary mb-1">
-                    Secure by design
+                    Sentiment Analysis
                   </p>
-                  <p>Authentication handled via SVH, with dedicated dashboard access.</p>
+                  <p>Identify whether feedback is positive, negative, or neutral automatically.</p>
                 </div>
+
                 <div className="rounded-xl bg-white/80 border border-ai-primary/10 px-3 py-2">
                   <p className="font-semibold text-xs text-ai-primary mb-1">
-                    AI‑first experience
+                    Business Insights
                   </p>
-                  <p>Chatbot, medical form, and profile tools unified in one place.</p>
+                  <p>Discover patterns and key topics from thousands of customer reviews.</p>
                 </div>
+
               </div>
             </div>
           </div>
         </motion.div>
+
       </div>
     </div>
   );
 };
 
 export default Landing;
-
