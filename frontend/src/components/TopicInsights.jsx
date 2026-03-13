@@ -2,12 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Layers, ArrowRight, Tag } from 'lucide-react';
 import apiClient from '../api/client';
-const TopicInsights = () => {
+const TopicInsights = ({ topics: externalTopics }) => {
     const [topics, setTopics] = useState([]);
     const [loading, setLoading] = useState(true);
+
     useEffect(() => {
-        fetchTopics();
-    }, []);
+        if (externalTopics) {
+            // Calculate percentages if we have counts
+            const total = externalTopics.reduce((acc, t) => acc + t.count, 0) || 1;
+            const normalized = externalTopics.map(t => ({
+                name: t.name,
+                percentage: ((t.count / total) * 100).toFixed(1)
+            }));
+            setTopics(normalized);
+            setLoading(false);
+        } else {
+            fetchTopics();
+        }
+    }, [externalTopics]);
+
     const fetchTopics = async () => {
         try {
             setLoading(true);

@@ -7,7 +7,12 @@ class NLPService {
     async _callPythonEngine(text) {
         return new Promise((resolve, reject) => {
             const pythonPath = 'python'; // Assumes python is in PATH
-            const scriptPath = path.join(__dirname, '..', 'ai', 'nlp-engine', 'engine.py');
+            const scriptPath = path.resolve(__dirname, '..', 'ai', 'nlp-engine', 'engine.py');
+
+            // Log for debugging (Only in dev)
+            if (process.env.NODE_ENV !== 'production') {
+                console.log(`[NLP] Spawning: ${pythonPath} "${scriptPath}"`);
+            }
 
             const pyProcess = spawn(pythonPath, [scriptPath, text]);
 

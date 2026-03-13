@@ -28,12 +28,15 @@ const profileRoutes = require('./routes/profileRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const medicalRoutes = require('./routes/medicalRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
+const aiToolsRoutes = require('./routes/aiToolsRoutes');
+
 // All feature routes are mounted under /api to keep a clean namespace.
 // New modules can be added by creating a route file and adding one line here.
 app.use('/api', profileRoutes);
 app.use('/api', aiRoutes);
 app.use('/api', medicalRoutes);
 app.use('/api', feedbackRoutes);
+app.use('/api', aiToolsRoutes);
 // Health Check
 app.get('/', (req, res) => {
   res.json({ 

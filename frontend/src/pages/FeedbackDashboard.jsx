@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import apiClient from '../api/client';
 import {
   BarChart3,
   MessageSquareText,
@@ -16,6 +17,11 @@ import {
   Smile,
   Frown,
   AlertCircle,
+  Menu,
+  X as CloseIcon,
+  ShieldAlert,
+  ShieldBan,
+  Terminal,
 } from 'lucide-react';
 import MetricCard from '../components/MetricCard';
 import UploadFeedback from '../components/UploadFeedback';
@@ -31,6 +37,9 @@ const navItems = [
   { id: 'feedback',  label: 'Feedback',  icon: MessageSquareText },
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   { id: 'insights',  label: 'AI Insights', icon: BrainCircuit },
+  { id: 'fraud',     label: 'Fraud Detection', icon: ShieldAlert },
+  { id: 'spam',      label: 'Spam Detection',  icon: ShieldBan },
+  { id: 'api',       label: 'API Access',      icon: Terminal },
   { id: 'settings',  label: 'Settings',  icon: Settings },
 ];
 /* ────────────────────────────────────────────
@@ -102,10 +111,34 @@ const NeuralBackground = () => (
 const FeedbackDashboard = ({ user, onLogout }) => {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { signout } = useAuth();
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchDashboardStats = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get('/api/feedback/analytics');
+      setStats(response.data);
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeSection === 'dashboard') {
+      fetchDashboardStats();
+    }
+  }, [activeSection]);
+
   const handleNavClick = (id) => {
     setActiveSection(id);
+    setMobileSidebarOpen(false); // Close mobile sidebar on navigation
   };
+
   const handleLogout = () => {
     signout();
     if (onLogout) onLogout();
@@ -114,43 +147,71 @@ const FeedbackDashboard = ({ user, onLogout }) => {
     <div className="min-h-screen bg-ai-bg font-body text-ai-primary relative overflow-hidden">
       <NeuralBackground />
       <div className="relative flex min-h-screen">
+        {/* ── Sidebar Backdrop (Mobile Only) ── */}
+        <AnimatePresence>
+          {mobileSidebarOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileSidebarOpen(false)}
+              className="fixed inset-0 bg-ai-primary/20 backdrop-blur-sm z-40 lg:hidden"
+            />
+          )}
+        </AnimatePresence>
+
         {/* ── Sidebar ── */}
         <motion.aside
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1, width: sidebarCollapsed ? 72 : 260 }}
+          initial={false}
+          animate={{ 
+            x: mobileSidebarOpen ? 0 : (window.innerWidth < 1024 ? -280 : 0),
+            width: sidebarCollapsed ? 72 : 260 
+          }}
           transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-          className="fixed lg:sticky top-0 left-0 h-screen z-30 flex flex-col
+          className={`fixed lg:sticky top-0 left-0 h-screen z-50 flex flex-col
                      backdrop-blur-2xl bg-white/75 border-r border-ai-primary/8
-                     shadow-[4px_0_24px_rgba(15,61,46,0.06)]"
+                     shadow-[4px_0_24px_rgba(15,61,46,0.06)] 
+                     ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
         >
           {/* Brand header */}
-          <div className="flex items-center gap-3 px-4 py-5 border-b border-ai-primary/8">
-            <motion.div
-              whileHover={{ rotate: 8, scale: 1.08 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-              className="shrink-0 flex items-center justify-center w-10 h-10 rounded-xl
-                         bg-gradient-to-br from-ai-primary to-ai-secondary shadow-lg text-white"
+          <div className="flex items-center justify-between px-4 py-5 border-b border-ai-primary/8">
+            <div className="flex items-center gap-3">
+              <motion.div
+                whileHover={{ rotate: 8, scale: 1.08 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+                className="shrink-0 flex items-center justify-center w-10 h-10 rounded-xl
+                           bg-gradient-to-br from-ai-primary to-ai-secondary shadow-lg text-white"
+              >
+                <BrainCircuit className="w-5 h-5" />
+              </motion.div>
+              <AnimatePresence>
+                {!sidebarCollapsed && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -8 }}
+                    transition={{ duration: 0.2 }}
+                    className="min-w-0"
+                  >
+                    <h1 className="text-sm font-heading font-bold text-ai-primary leading-tight truncate">
+                      LOMI
+                      <span className="block text-[8px] uppercase tracking-wider text-ai-secondary font-body">
+                        Intelligence Hub
+                      </span>
+                    </h1>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            
+            {/* Mobile Close Button */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setMobileSidebarOpen(false)}
+              className="lg:hidden p-2 rounded-lg bg-ai-primary/5 text-ai-primary/50"
             >
-              <BrainCircuit className="w-5 h-5" />
-            </motion.div>
-            <AnimatePresence>
-              {!sidebarCollapsed && (
-                <motion.div
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -8 }}
-                  transition={{ duration: 0.2 }}
-                  className="min-w-0"
-                >
-                  <h1 className="text-sm font-heading font-bold text-ai-primary leading-tight truncate">
-                    Feedback Intelligence
-                  </h1>
-                  <p className="text-[10px] text-ai-primary/50 font-medium tracking-wide uppercase">
-                    AI Platform
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+              <CloseIcon className="w-4 h-4" />
+            </motion.button>
           </div>
           {/* Navigation */}
           <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
@@ -258,41 +319,53 @@ const FeedbackDashboard = ({ user, onLogout }) => {
             initial={{ y: -12, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.15, duration: 0.5 }}
-            className="sticky top-0 z-20 backdrop-blur-xl bg-white/60 border-b border-ai-primary/6
-                       px-6 lg:px-8 py-4 flex items-center justify-between"
+            className="sticky top-0 z-20 backdrop-blur-xl bg-white/60 border-b border-ai-primary/6 w-full"
           >
-            <div>
-              <h2 className="text-xl lg:text-2xl font-heading font-bold text-ai-primary flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-ai-secondary" />
-                Customer Feedback Intelligence Dashboard
-              </h2>
-              <p className="text-xs text-ai-primary/50 mt-0.5 font-medium">
-                AI-powered insights at a glance
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              {/* Notification bell with pulse */}
-              <motion.button
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative p-2 rounded-xl bg-white/80 border border-ai-primary/8
-                           hover:shadow-md transition-shadow duration-200"
-              >
-                <Bell className="w-4.5 h-4.5 text-ai-primary/60" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-ai-secondary animate-pulse" />
-              </motion.button>
-              {/* User avatar */}
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="w-9 h-9 rounded-xl bg-gradient-to-br from-ai-primary to-ai-secondary
-                           flex items-center justify-center text-white text-sm font-bold shadow-md cursor-pointer"
-              >
-                {(user?.username || user?.email || 'U').charAt(0).toUpperCase()}
-              </motion.div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                {/* Mobile Menu Toggle */}
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setMobileSidebarOpen(true)}
+                  className="p-2 lg:hidden rounded-xl bg-ai-primary/5 border border-ai-primary/10 text-ai-primary"
+                >
+                  <Menu className="w-5 h-5" />
+                </motion.button>
+                <div>
+                  <h2 className="text-lg lg:text-2xl font-heading font-bold text-ai-primary flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-ai-secondary hidden sm:inline-block" />
+                    Customer Feedback Intelligence Dashboard
+                  </h2>
+                  <p className="text-[10px] sm:text-xs text-ai-primary/50 mt-0.5 font-medium">
+                    AI-powered insights at a glance
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {/* Notification bell with pulse */}
+                <motion.button
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative p-2 rounded-xl bg-white/80 border border-ai-primary/8
+                             hover:shadow-md transition-shadow duration-200"
+                >
+                  <Bell className="w-4.5 h-4.5 text-ai-primary/60" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-ai-secondary animate-pulse" />
+                </motion.button>
+                {/* User avatar */}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="w-9 h-9 rounded-xl bg-gradient-to-br from-ai-primary to-ai-secondary
+                             flex items-center justify-center text-white text-sm font-bold shadow-md cursor-pointer"
+                >
+                  {(user?.username || user?.email || 'U').charAt(0).toUpperCase()}
+                </motion.div>
+              </div>
             </div>
           </motion.header>
           {/* Dashboard content */}
-          <div className="flex-1 px-6 lg:px-8 py-6 lg:py-8">
+          <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 overflow-x-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeSection}
@@ -300,39 +373,40 @@ const FeedbackDashboard = ({ user, onLogout }) => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
                 transition={{ duration: 0.35, ease: 'easeOut' }}
-                className="h-full"
+                className="h-full space-y-8 min-h-[600px]"
               > 
                 {activeSection === 'dashboard' ? (
                   <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+                    {/* Top Metrics Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                       <MetricCard
                         index={0}
                         title="Total Feedback"
-                        value="2,847"
+                        value={stats?.totalFeedback?.toLocaleString() || '0'}
                         icon={MessageSquareText}
                         trend="up"
-                        trendValue="+12.5%"
+                        trendValue="Live"
                       />
                       <MetricCard
                         index={1}
                         title="Positive Sentiment"
-                        value="84.2%"
+                        value={stats?.totalFeedback > 0 ? `${Math.round((stats.sentimentCounts.positive / stats.totalFeedback) * 100)}%` : '0%'}
                         icon={Smile}
                         trend="up"
-                        trendValue="+3.8%"
+                        trendValue="AI Verified"
                       />
                       <MetricCard
                         index={2}
                         title="Negative Sentiment"
-                        value="11.5%"
+                        value={stats?.totalFeedback > 0 ? `${Math.round((stats.sentimentCounts.negative / stats.totalFeedback) * 100)}%` : '0%'}
                         icon={Frown}
                         trend="down"
-                        trendValue="-1.2%"
+                        trendValue="AI Tracked"
                       />
                       <MetricCard
                         index={3}
                         title="Top Customer Issue"
-                        value="Latency"
+                        value={stats?.topTopics?.[0]?.name || 'Analyzing...'}
                         icon={AlertCircle}
                         trend="neutral"
                         trendValue="Stable"
@@ -340,31 +414,70 @@ const FeedbackDashboard = ({ user, onLogout }) => {
                     </div>
 
                     {/* Dashboard Intelligence Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-12 items-start">
                       {/* Left Column: Upload & Live Feed */}
-                      <div className="lg:col-span-2 space-y-8">
-                        <UploadFeedback />
+                      <div className="lg:col-span-8 space-y-8">
+                        <UploadFeedback onUploadSuccess={fetchDashboardStats} />
                         
-                        {/* Placeholder for Data Grid */}
+                        {/* Feed Intelligence Data Stream */}
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.6, duration: 0.5 }}
-                          className="bg-white/40 backdrop-blur-md rounded-xl-card border border-ai-primary/6 p-8 min-h-[300px] flex flex-col items-center justify-center text-center"
+                          className="bg-white/40 backdrop-blur-md rounded-xl-card border border-ai-primary/6 p-8 min-h-[400px] flex flex-col items-center justify-center text-center shadow-ai-card overflow-hidden"
                         >
-                          <div className="w-16 h-16 rounded-2xl bg-ai-primary/5 flex items-center justify-center mb-4">
-                            <MessageSquareText className="w-8 h-8 text-ai-primary/20" />
-                          </div>
-                          <h4 className="text-lg font-heading font-bold text-ai-primary/40">Feed Intelligence Data Stream</h4>
-                          <p className="text-sm text-ai-primary/25 mt-1 max-w-xs">Detailed analysis records will populate here once datasets are processed.</p>
+                          {stats?.recentActivity?.length > 0 ? (
+                            <div className="w-full h-full flex flex-col">
+                              <div className="flex items-center gap-3 mb-6 px-2">
+                                <div className="p-2 rounded-lg bg-ai-primary/5 text-ai-primary">
+                                  <MessageSquareText className="w-5 h-5" />
+                                </div>
+                                <h4 className="text-lg font-heading font-bold text-ai-primary">Live Analysis Feed</h4>
+                              </div>
+                              <div className="space-y-3 overflow-y-auto max-h-[500px] px-2 custom-scrollbar">
+                                {stats.recentActivity.map((item, i) => (
+                                  <motion.div
+                                    key={item.id || i}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.05 }}
+                                    className="p-4 rounded-xl bg-white/60 border border-ai-primary/5 flex items-start gap-4 text-left group hover:border-ai-secondary/20 transition-colors"
+                                  >
+                                    <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
+                                      item.sentiment === 'positive' ? 'bg-ai-secondary shadow-[0_0_8px_rgba(46,125,91,0.5)]' :
+                                      item.sentiment === 'negative' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' :
+                                      'bg-ai-primary/30'
+                                    }`} />
+                                    <div className="min-w-0">
+                                      <p className="text-sm text-ai-primary/80 line-clamp-2 leading-relaxed">{item.text}</p>
+                                      <div className="flex items-center gap-3 mt-2">
+                                        <span className="text-[10px] font-bold text-ai-primary/40 uppercase tracking-widest">{item.sentiment}</span>
+                                        {item.topics?.slice(0, 2).map(t => (
+                                          <span key={t} className="text-[9px] font-bold text-ai-secondary bg-ai-secondary/5 px-1.5 py-0.5 rounded-full border border-ai-secondary/10 uppercase">{t}</span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="w-16 h-16 rounded-2xl bg-ai-primary/5 flex items-center justify-center mb-4">
+                                <MessageSquareText className="w-8 h-8 text-ai-primary/20" />
+                              </div>
+                              <h4 className="text-lg font-heading font-bold text-ai-primary/40">Feed Intelligence Data Stream</h4>
+                              <p className="text-sm text-ai-primary/25 mt-1 max-w-xs">Detailed analysis records will populate here once datasets are processed.</p>
+                            </>
+                          )}
                         </motion.div>
                       </div>
 
                       {/* Right Column: AI Insights & Charts */}
-                      <div className="space-y-8">
-                        <SentimentChart />
-                        <TopicInsights />
-                        <AIInsightPanel />
+                      <div className="lg:col-span-4 space-y-8">
+                        <SentimentChart stats={stats} />
+                        <TopicInsights topics={stats?.topTopics} />
+                        <AIInsightPanel key={stats?.totalFeedback} />
                       </div>
                     </div>
                   </>

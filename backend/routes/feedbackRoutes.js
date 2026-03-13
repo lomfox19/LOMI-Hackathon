@@ -19,4 +19,11 @@ router.post('/feedback/analyze', feedbackController.analyzeFeedback);
  * @access  Private
  */
 router.get('/feedback/insights', feedbackController.getInsights);
+
+/**
+ * @route   GET /api/feedback/analytics
+ * @desc    Get processed statistics for the dashboard
+ * @access  Private
+ */
+router.get('/feedback/analytics', feedbackController.getAnalytics);
 module.exports = router;

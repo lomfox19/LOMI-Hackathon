@@ -11,7 +11,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import apiClient from '../api/client';
-const UploadFeedback = () => {
+const UploadFeedback = ({ onUploadSuccess }) => {
   const [file, setFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('idle'); // idle, uploading, success, error
@@ -73,6 +73,7 @@ const UploadFeedback = () => {
         },
       });
       setUploadStatus('success');
+      if (onUploadSuccess) onUploadSuccess();
       // Reset after 3 seconds on success
       setTimeout(() => {
         removeFile();

@@ -10,14 +10,32 @@ import {
 } from 'recharts';
 import { TrendingUp, Sparkles, BrainCircuit } from 'lucide-react';
 import apiClient from '../api/client';
-const SentimentChart = () => {
+const SentimentChart = ({ stats: externalStats }) => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState(null);
     const COLORS = ['#2E7D5B', '#FCBF49', '#D62828']; // Positive, Neutral, Negative
+
     useEffect(() => {
-        fetchInsights();
-    }, []);
+        if (externalStats) {
+            updateFromExternal(externalStats);
+        } else {
+            fetchInsights();
+        }
+    }, [externalStats]);
+
+    const updateFromExternal = (s) => {
+        setStats(s);
+        const total = s.totalFeedback || 1;
+        const chartData = [
+            { name: 'Positive', value: Math.round((s.sentimentCounts?.positive || 0) / total * 100) },
+            { name: 'Neutral', value: Math.round((s.sentimentCounts?.neutral || 0) / total * 100) },
+            { name: 'Negative', value: Math.round((s.sentimentCounts?.negative || 0) / total * 100) },
+        ];
+        setData(chartData);
+        setLoading(false);
+    };
+
     const fetchInsights = async () => {
         try {
             setLoading(true);
