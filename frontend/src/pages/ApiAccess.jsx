@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Key, 
@@ -12,21 +12,45 @@ import {
   Globe,
   Lock,
   Zap,
-  Cpu
+  Cpu,
+  Layers
 } from 'lucide-react';
+import apiClient from '../api/client';
 
 const ApiAccess = () => {
     const [apiKey, setApiKey] = useState(null);
+    const [projectName, setProjectName] = useState('');
     const [copied, setCopied] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [fetchLoading, setFetchLoading] = useState(true);
 
-    const generateKey = () => {
+    useEffect(() => {
+        fetchKey();
+    }, []);
+
+    const fetchKey = async () => {
+        try {
+            setFetchLoading(true);
+            const response = await apiClient.get('/api/api-key');
+            setApiKey(response.data.key);
+        } catch (error) {
+            // 404 means no key, which is fine
+        } finally {
+            setFetchLoading(false);
+        }
+    };
+
+    const generateKey = async () => {
+        if (!projectName.trim()) return;
         setLoading(true);
-        setTimeout(() => {
-            const secret = 'sk_live_' + Math.random().toString(36).substr(2, 10) + Math.random().toString(36).substr(2, 10);
-            setApiKey(secret);
+        try {
+            const response = await apiClient.post('/api/api-key/generate', { projectName });
+            setApiKey(response.data.key);
+        } catch (error) {
+            console.error('Failed to generate key:', error);
+        } finally {
             setLoading(false);
-        }, 800);
+        }
     };
 
     const copyToClipboard = () => {
@@ -36,216 +60,156 @@ const ApiAccess = () => {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const revokeKey = () => {
+    const revokeKey = async () => {
         if (window.confirm("Are you sure you want to revoke this API key? This action is irreversible.")) {
-            setApiKey(null);
+            try {
+                await apiClient.delete('/api/api-key/revoke');
+                setApiKey(null);
+            } catch (error) {
+                console.error('Revoke failed:', error);
+            }
         }
     };
 
-    const pythonExample = `import requests
-
-url = "https://api.lomi.ai/v1/analyze"
-headers = {
-    "Authorization": "Bearer ${apiKey || 'YOUR_API_KEY'}",
-    "Content-Type": "application/json"
-}
-data = {
+    const apiUsageExample = `curl -X POST https://api.lomi.ai/v1/analyze-feedback \\
+  -H "x-api-key: ${apiKey || 'YOUR_API_KEY'}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
     "text": "Excellent customer support and easy UI."
-}
-
-response = requests.post(url, headers=headers, json=data)
-print(response.json())`;
-
-    const jsExample = `const response = await fetch("https://api.lomi.ai/v1/analyze", {
-  method: "POST",
-  headers: {
-    "Authorization": "Bearer ${apiKey || 'YOUR_API_KEY'}",
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    text: "Excellent customer support and easy UI."
-  })
-});
-
-const result = await response.json();
-console.log(result);`;
+  }'`;
 
     return (
         <div className="space-y-8 max-w-5xl mx-auto px-2">
             {/* Header */}
             <div>
-                <h2 className="text-2xl font-heading font-bold text-ai-primary flex items-center gap-3">
+                <h2 className="text-3xl font-heading font-bold text-ai-primary flex items-center gap-3">
                     <div className="p-2 rounded-xl bg-ai-secondary/10 text-ai-secondary">
-                        <Terminal className="w-6 h-6" />
+                        <Terminal className="w-8 h-8" />
                     </div>
-                    Intelligence Web Services
+                    Business API Access
                 </h2>
                 <p className="text-sm text-ai-primary/50 mt-1 font-medium italic">
-                    Integrate our enterprise AI models directly into your custom applications with high-performance API access.
+                    Seamlessly integrate LOMI's neural analysis models into your business workflow.
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* API Key Management */}
-                <div className="lg:col-span-1 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Management Column */}
+                <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Key Generation Section */}
                     <motion.div 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="bg-white/60 backdrop-blur-xl rounded-xl-card border border-ai-primary/8 shadow-ai-card p-6"
+                        className="bg-white/60 backdrop-blur-xl rounded-xl-card border border-ai-primary/8 shadow-ai-card p-8 flex flex-col justify-between"
                     >
-                        <div className="flex items-center gap-2 mb-6">
-                            <Key className="w-4 h-4 text-ai-secondary" />
-                            <h3 className="text-xs font-bold text-ai-primary/60 uppercase tracking-widest">Master API Credentials</h3>
-                        </div>
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-2">
+                                <Key className="w-4 h-4 text-ai-secondary" />
+                                <h3 className="text-xs font-bold text-ai-primary/60 uppercase tracking-widest">Master Production Key</h3>
+                            </div>
 
-                        {!apiKey ? (
-                            <div className="py-6 flex flex-col items-center gap-4 text-center">
-                                <div className="p-4 rounded-full bg-ai-primary/5 border border-ai-primary/5 animate-pulse">
-                                    <Lock className="w-8 h-8 text-ai-primary/20" />
-                                </div>
-                                <p className="text-[10px] font-bold text-ai-primary/40 leading-relaxed uppercase tracking-widest">No active keys found</p>
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={generateKey}
-                                    disabled={loading}
-                                    className="w-full flex items-center justify-center gap-2 py-3 bg-ai-primary text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:shadow-lg transition-all"
-                                >
-                                    {loading ? (
-                                        <RefreshCcw className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <>
-                                            <Zap className="w-4 h-4" />
-                                            Generate Production Key
-                                        </>
-                                    )}
-                                </motion.button>
-                            </div>
-                        ) : (
-                            <div className="space-y-6">
-                                <div className="p-4 bg-ai-bg/60 border border-ai-primary/10 rounded-xl break-all">
-                                    <p className="text-[11px] font-mono font-bold text-ai-primary leading-relaxed opacity-70">
-                                        {apiKey}
-                                    </p>
-                                </div>
-                                
-                                <div className="flex gap-2">
+                            {!apiKey ? (
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-ai-primary/40 uppercase tracking-widest ml-1">Project Identifier</label>
+                                        <input 
+                                            type="text"
+                                            value={projectName}
+                                            onChange={(e) => setProjectName(e.target.value)}
+                                            placeholder="e.g. Marketing Dashboard"
+                                            className="w-full px-4 py-3 rounded-xl bg-ai-bg/40 border border-ai-primary/10 focus:border-ai-secondary/30 outline-none text-sm"
+                                        />
+                                    </div>
                                     <motion.button
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
-                                        onClick={copyToClipboard}
-                                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
-                                            copied ? 'bg-ai-secondary text-white shadow-lg' : 'bg-ai-primary/5 text-ai-primary hover:bg-ai-primary/10'
-                                        }`}
+                                        onClick={generateKey}
+                                        disabled={loading || !projectName.trim()}
+                                        className="w-full py-4 bg-ai-primary text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:shadow-lg disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                                     >
-                                        {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                                        {copied ? 'Copied' : 'Copy Key'}
-                                    </motion.button>
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={revokeKey}
-                                        className="p-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
+                                        {loading ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                                        Generate API Key
                                     </motion.button>
                                 </div>
-                            </div>
-                        )}
+                            ) : (
+                                <div className="space-y-6">
+                                    <div className="relative group">
+                                        <div className="p-4 bg-ai-bg/70 border border-ai-primary/10 rounded-xl font-mono text-xs text-ai-primary font-bold break-all pr-12">
+                                            {apiKey}
+                                        </div>
+                                        <button 
+                                            onClick={copyToClipboard}
+                                            className="absolute top-1/2 right-3 -translate-y-1/2 p-2 rounded-lg bg-ai-primary text-white hover:bg-ai-secondary transition-colors"
+                                        >
+                                            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                        </button>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <button onClick={revokeKey} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-red-200 text-red-600 text-[10px] font-bold uppercase tracking-widest hover:bg-red-50 transition-all">
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                            Revoke Master Key
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </motion.div>
 
-                    {/* Stats Card */}
-                    <div className="p-5 rounded-xl border border-ai-primary/5 bg-ai-primary/[0.02] space-y-4">
-                        <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold text-ai-primary/40 uppercase">Latency Average</span>
-                            <span className="text-xs font-bold text-ai-secondary">140ms</span>
+                    {/* Example Usage / Documentation */}
+                    <motion.div 
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="bg-ai-primary rounded-xl-card border border-white/5 shadow-ai-card p-8 text-white relative overflow-hidden"
+                    >
+                        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                            <Code2 className="w-32 h-32" />
                         </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold text-ai-primary/40 uppercase">Monthly Quota</span>
-                            <span className="text-xs font-bold text-ai-primary/70">8.2k / 10k</span>
+                        
+                        <div className="relative z-10 space-y-6">
+                            <div className="flex items-center gap-2">
+                                <Terminal className="w-4 h-4 text-ai-secondary" />
+                                <h3 className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Global Endpoint Implementation</h3>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="px-3 py-1 bg-ai-secondary text-white rounded-lg text-[10px] font-bold uppercase">POST</div>
+                                    <span className="font-mono text-xs text-white/60">/api/v1/analyze-feedback</span>
+                                </div>
+                                <div className="p-4 bg-black/40 border border-white/5 rounded-xl">
+                                    <pre className="text-[11px] font-mono text-white/80 overflow-x-auto leading-relaxed scrollbar-hide">
+                                        {apiUsageExample}
+                                    </pre>
+                                </div>
+                                <div className="flex items-center gap-6 pt-2">
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] font-bold text-white/20 uppercase">Header Auth</span>
+                                        <span className="text-[11px] font-mono text-ai-secondary">x-api-key</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] font-bold text-white/20 uppercase">Content-Type</span>
+                                        <span className="text-[11px] font-mono text-ai-secondary">application/json</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="h-1.5 w-full bg-ai-primary/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-ai-secondary w-[82%]" />
-                        </div>
-                    </div>
+                    </motion.div>
                 </div>
 
-                {/* API Documentation / Examples */}
-                <div className="lg:col-span-2 space-y-6">
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="bg-ai-primary rounded-xl-card border border-white/5 shadow-ai-card p-6 overflow-hidden"
-                    >
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <Code2 className="w-5 h-5 text-ai-secondary" />
-                                <h3 className="text-sm font-heading font-bold text-white">Integration Sandbox</h3>
-                            </div>
-                            <div className="flex gap-2">
-                                <div className="px-2 py-0.5 rounded bg-white/5 text-white/40 text-[9px] font-mono border border-white/10 uppercase">v1.2 Stable</div>
-                                <div className="px-2 py-0.5 rounded bg-ai-secondary text-white text-[9px] font-bold border border-ai-secondary/20 uppercase">Production SSL</div>
-                            </div>
+                {/* Features / Benefits Grid */}
+                <div className="lg:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-6">
+                    {[
+                        { icon: Cpu, title: "Neural V4 Core", desc: "Latest transformer models for 2026." },
+                        { icon: Lock, title: "AES Encryption", desc: "Encrypted at rest and in transit." },
+                        { icon: Globe, title: "Global Nodes", desc: "Low latency worldwide endpoints." },
+                        { icon: Layers, title: "Versioning", desc: "Long-term support for stable APIs." }
+                    ].map((item, i) => (
+                        <div key={i} className="p-5 rounded-xl border border-ai-primary/5 bg-white/40 flex flex-col items-center text-center group hover:bg-ai-primary/5 transition-all">
+                            <item.icon className="w-6 h-6 text-ai-secondary mb-3 group-hover:scale-110 transition-transform" />
+                            <h4 className="text-xs font-bold text-ai-primary mb-1 uppercase tracking-tight">{item.title}</h4>
+                            <p className="text-[10px] text-ai-primary/40 leading-relaxed">{item.desc}</p>
                         </div>
-
-                        {/* Language Selector (Mock) */}
-                        <div className="flex gap-4 mb-4">
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 text-white text-[10px] font-bold uppercase tracking-widest border border-white/10">
-                                <FileCode className="w-3.5 h-3.5 text-ai-secondary" /> Python (Requests)
-                            </button>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white/40 text-[10px] font-bold uppercase tracking-widest hover:text-white transition-colors">
-                                <Globe className="w-3.5 h-3.5" /> Node.js (Fetch)
-                            </button>
-                        </div>
-
-                        {/* Code Block */}
-                        <div className="p-4 bg-black/40 rounded-xl border border-white/5 relative group">
-                            <pre className="text-xs font-mono text-white/80 overflow-x-auto leading-relaxed scrollbar-hide py-2">
-                                {pythonExample}
-                            </pre>
-                            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button className="p-1.5 rounded bg-white/5 text-white/40 hover:text-white transition-colors">
-                                    <Copy className="w-3 h-3" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Parameters Table */}
-                        <div className="mt-8 space-y-4">
-                            <h4 className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] px-1">Global Parameters</h4>
-                            <div className="space-y-2">
-                                {[
-                                    { name: "text", type: "String", req: "Yes", desc: "The feedback content to analyze." },
-                                    { name: "features", type: "Array", req: "No", desc: "List of enabled AI modules (fraud, spam, sentiment)." }
-                                ].map((param, i) => (
-                                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/5">
-                                        <div>
-                                            <span className="text-xs font-mono font-bold text-white/90">{param.name}</span>
-                                            <span className="text-[9px] text-ai-secondary ml-2 font-bold px-1.5 py-0.5 bg-ai-secondary/10 rounded uppercase">{param.type}</span>
-                                        </div>
-                                        <div className="text-[10px] font-medium text-white/40 italic">{param.desc}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* Features Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {[
-                            { icon: Zap, label: "Real-time", val: "<100ms" },
-                            { icon: Lock, label: "Security", val: "AES-256" },
-                            { icon: Cpu, label: "Model", val: "Neural V4" },
-                            { icon: Globe, label: "Scalability", val: "Auto" }
-                        ].map((item, i) => (
-                            <div key={i} className="p-4 rounded-xl border border-ai-primary/5 bg-white/40 text-center">
-                                <item.icon className="w-4 h-4 text-ai-secondary mx-auto mb-2" />
-                                <div className="text-[9px] font-bold text-ai-primary/30 uppercase mb-0.5">{item.label}</div>
-                                <div className="text-xs font-bold text-ai-primary/70 uppercase tracking-tighter">{item.val}</div>
-                            </div>
-                        ))}
-                    </div>
+                    ))}
                 </div>
             </div>
         </div>

@@ -92,24 +92,106 @@ exports.analyzeFeedback = async (req, res) => {
     }
 };
 
+const aiAnalysisService = require('../services/aiAnalysisService');
+
 /**
- * GET Aggregated Insights
+ * GET Aggregated Insights (Powered by Gemini)
  */
 exports.getInsights = async (req, res) => {
     try {
-        const insights = nlpService.generateInsights(uploadedFeedback);
-        res.status(200).json(insights || { message: 'No data available' });
+        if (uploadedFeedback.length === 0) {
+            return res.status(200).json({ message: 'No data available' });
+        }
+
+        // Collect all feedback text for the AI
+        const feedbackTexts = uploadedFeedback.map(f => f.text);
+        
+        // Get Deep AI Insights from Gemini
+        const aiInsights = await aiAnalysisService.analyzeFeedback(feedbackTexts);
+
+        // Map AI response to dashboard structure
+        const formattedInsights = {
+            totalFeedback: uploadedFeedback.length,
+            sentimentDistribution: {
+                positive: aiInsights.sentiment_summary.positive + '%',
+                neutral: aiInsights.sentiment_summary.neutral + '%',
+                negative: aiInsights.sentiment_summary.negative + '%'
+            },
+            topicDistribution: aiInsights.top_topics.map(topic => ({
+                name: topic,
+                percentage: (100 / aiInsights.top_topics.length).toFixed(1) // Approximate distribution if not provided
+            })),
+            topCustomerIssue: aiInsights.top_topics[0],
+            trend: 'up',
+            globalSummary: aiInsights.insight_summary,
+            recommendations: [aiInsights.recommendation, ...nlpService.generateInsights(uploadedFeedback).recommendations.slice(0, 2)],
+            keywords: aiInsights.keywords || []
+        };
+
+        res.status(200).json(formattedInsights);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to get insights.' });
+        console.error('AI Insights Error:', error);
+        // Fallback to basic insights if AI fails
+        const fallback = nlpService.generateInsights(uploadedFeedback);
+        res.status(200).json(fallback);
     }
 };
 
 /**
- * GET Dashboard Analytics
+ * POST Generate Full Business Intelligence Report
+ */
+exports.generateInsightReport = async (req, res) => {
+    try {
+        if (uploadedFeedback.length === 0) {
+            return res.status(400).json({ error: 'No feedback data available. Please upload a dataset first.' });
+        }
+
+        const analyticsSummary = {
+            totalFeedback: uploadedFeedback.length,
+            sentimentCounts: {
+                positive: uploadedFeedback.filter(f => f.sentiment === 'positive').length,
+                negative: uploadedFeedback.filter(f => f.sentiment === 'negative').length,
+                neutral: uploadedFeedback.filter(f => f.sentiment === 'neutral').length
+            },
+            topTopics: [] // Logic to extract top topics if needed, but analyzeFeedback handles most
+        };
+
+        // Get top topics from existing logic in getAnalytics (simplified)
+        const topicCounts = {};
+        uploadedFeedback.forEach(f => {
+            f.topics?.forEach(topic => {
+                topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+            });
+        });
+        analyticsSummary.topTopics = Object.entries(topicCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([name, count]) => ({ name, count }));
+
+        const feedbackTexts = uploadedFeedback.map(f => f.text);
+        const report = await aiAnalysisService.generateInsightReport(feedbackTexts, analyticsSummary);
+
+        res.status(200).json({
+            ...report,
+            timestamp: new Date().toISOString(),
+            dataSummary: analyticsSummary
+        });
+    } catch (error) {
+        console.error('Report Generation Error:', error);
+        res.status(500).json({ error: 'Failed to generate AI insight report.' });
+    }
+};
+
+/**
+ * GET Dashboard Analytics (Enhanced with AI)
  */
 exports.getAnalytics = async (req, res) => {
     try {
         const total = uploadedFeedback.length;
+        if (total === 0) {
+            return res.status(200).json({ totalFeedback: 0, sentimentCounts: { positive: 0, negative: 0, neutral: 0 }, topTopics: [] });
+        }
+
         const sentimentCounts = {
             positive: uploadedFeedback.filter(f => f.sentiment === 'positive').length,
             negative: uploadedFeedback.filter(f => f.sentiment === 'negative').length,
@@ -128,11 +210,71 @@ exports.getAnalytics = async (req, res) => {
             .slice(0, 5)
             .map(([name, count]) => ({ name, count }));
 
+        // Optional: Include AI summary in main stats if needed
+        let aiSummary = null;
+        try {
+            const texts = uploadedFeedback.map(f => f.text).slice(-50); // Analyze last 50 for speed
+            aiSummary = await aiAnalysisService.analyzeFeedback(texts);
+        } catch (e) {
+            console.warn("AI Analytics summary failed:", e);
+        }
+
+        const sentimentDistribution = [
+            { name: 'Positive', value: aiSummary ? aiSummary.sentiment_summary.positive : Math.round((sentimentCounts.positive / total) * 100) },
+            { name: 'Neutral', value: aiSummary ? aiSummary.sentiment_summary.neutral : Math.round((sentimentCounts.neutral / total) * 100) },
+            { name: 'Negative', value: aiSummary ? aiSummary.sentiment_summary.negative : Math.round((sentimentCounts.negative / total) * 100) }
+        ];
+
+        const topicDistribution = (aiSummary ? aiSummary.top_topics.map(t => ({ topic: t, count: Math.ceil(total / 5) })) : topTopics.map(t => ({ topic: t.name, count: t.count })));
+
+        // Extract keywords from all feedback
+        const allKeywords = [];
+        uploadedFeedback.forEach(f => {
+            if (f.keywords) allKeywords.push(...f.keywords);
+        });
+        if (aiSummary?.keywords) allKeywords.push(...aiSummary.keywords);
+
+        const keywordMap = {};
+        allKeywords.forEach(kw => {
+            const k = kw.toLowerCase();
+            keywordMap[k] = (keywordMap[k] || 0) + 1;
+        });
+        const keywordFrequencies = Object.entries(keywordMap)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(([word, frequency]) => ({ word, frequency }));
+
+        // Generate mock trends based on the feedback timestamps
+        // Groups feedback by day (or just simulated batches if timestamps are close)
+        const feedbackTrends = [];
+        const sortedFeedback = [...uploadedFeedback].sort((a, b) => a.id - b.id);
+        
+        // Split into 5-7 data points for the trend chart
+        const chunkSize = Math.ceil(total / 5);
+        for (let i = 0; i < total; i += chunkSize) {
+            const chunk = sortedFeedback.slice(i, i + chunkSize);
+            const date = new Date(chunk[0].id).toLocaleDateString([], { month: 'short', day: 'numeric' });
+            const pos = chunk.filter(f => f.sentiment === 'positive').length;
+            const neg = chunk.filter(f => f.sentiment === 'negative').length;
+            const neu = chunk.filter(f => f.sentiment === 'neutral').length;
+            feedbackTrends.push({
+                date,
+                positive: Math.round((pos / chunk.length) * 100),
+                negative: Math.round((neg / chunk.length) * 100),
+                neutral: Math.round((neu / chunk.length) * 100)
+            });
+        }
+
         res.status(200).json({
             totalFeedback: total,
             sentimentCounts,
+            sentimentDistribution,
+            topicDistribution,
+            keywordFrequencies,
+            feedbackTrends,
             topTopics,
-            recentActivity: uploadedFeedback.slice(-10).reverse()
+            recentActivity: uploadedFeedback.slice(-10).reverse(),
+            aiInsights: aiSummary
         });
     } catch (error) {
         res.status(500).json({ error: 'Failed to get analytics.' });

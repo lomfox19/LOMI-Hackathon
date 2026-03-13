@@ -28,6 +28,12 @@ import UploadFeedback from '../components/UploadFeedback';
 import SentimentChart from '../components/SentimentChart';
 import TopicInsights from '../components/TopicInsights';
 import AIInsightPanel from '../components/AIInsightPanel';
+import FraudDetection from './FraudDetection';
+import SpamDetection from './SpamDetection';
+import ApiAccess from './ApiAccess';
+import Feedback from './Feedback';
+import Analytics from './Analytics';
+import AIInsights from './AIInsights';
 import { useAuth } from '../auth/AuthContext';
 /* ────────────────────────────────────────────
    Sidebar navigation items
@@ -481,6 +487,18 @@ const FeedbackDashboard = ({ user, onLogout }) => {
                       </div>
                     </div>
                   </>
+                ) : activeSection === 'feedback' ? (
+                  <Feedback />
+                ) : activeSection === 'analytics' ? (
+                  <Analytics />
+                ) : activeSection === 'insights' ? (
+                  <AIInsights />
+                ) : activeSection === 'fraud' ? (
+                  <FraudDetection />
+                ) : activeSection === 'spam' ? (
+                  <SpamDetection />
+                ) : activeSection === 'api' ? (
+                  <ApiAccess />
                 ) : (
                   <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] text-ai-primary/30 p-20 border-2 border-dashed border-ai-primary/5 rounded-3xl">
                     <BrainCircuit className="w-16 h-16 mb-4 opacity-20" />
