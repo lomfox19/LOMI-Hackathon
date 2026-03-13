@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import apiClient from '../api/client';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 const AIInsights = () => {
     const [report, setReport] = useState(null);
@@ -74,7 +74,7 @@ const AIInsights = () => {
         doc.text('2. Dataset Overview', 20, yPos);
         yPos += 5;
         
-        doc.autoTable({
+        autoTable(doc, {
             startY: yPos,
             head: [['Metric', 'Value']],
             body: [
@@ -84,7 +84,7 @@ const AIInsights = () => {
                 ['Negative Sentiment', report.dataSummary.sentimentCounts.negative],
             ],
             theme: 'striped',
-            headStyles: { fillStyle: [0, 48, 73] }
+            headStyles: { fillColor: [0, 48, 73] }
         });
         yPos = doc.lastAutoTable.finalY + 15;
 
