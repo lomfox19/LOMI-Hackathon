@@ -6,8 +6,12 @@ const helmet = require('helmet');
 const app = express();
 // Middleware
 app.use(helmet());
+// CORS: allow FRONTEND_URL (single) or comma-separated CORS_ORIGINS for production
+const corsOrigin = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
+  : [process.env.FRONTEND_URL || 'http://localhost:3000'];
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: corsOrigin,
   credentials: true
 }));
 app.use(express.json());
