@@ -1,0 +1,121 @@
+customer_id,product_name,purchase_date,review_date,rating,review_text,sentiment_label,region
+CUST1000,Smartwatch Z,2025-01-16,2025-01-17,3,Delivery was acceptable,neutral,Canada
+CUST1001,Laptop Pro,2025-01-11,2025-01-17,1,Battery life is terrible,negative,India
+CUST1002,Wireless Earbuds,2025-02-23,2025-02-25,3,Delivery was acceptable,neutral,UK
+CUST1003,Wireless Earbuds,2025-02-11,2025-02-18,4,Very satisfied with the performance,positive,Germany
+CUST1004,Wireless Earbuds,2025-03-28,2025-04-02,3,Packaging was normal,neutral,Canada
+CUST1005,Smartphone X,2025-03-04,2025-03-08,1,Received damaged packaging,negative,Germany
+CUST1006,Laptop Pro,2025-04-30,2025-05-06,3,Delivery was acceptable,neutral,UK
+CUST1007,Smartwatch Z,2025-05-01,2025-05-03,3,Packaging was normal,neutral,UK
+CUST1008,Wireless Earbuds,2025-02-23,2025-03-05,4,Amazing product quality and fast delivery,positive,UK
+CUST1009,Wireless Earbuds,2025-04-30,2025-05-01,1,Received damaged packaging,negative,India
+CUST1010,Smartphone X,2025-02-09,2025-02-12,1,Customer support did not respond,negative,US
+CUST1011,Smartwatch Z,2025-01-09,2025-01-12,5,Excellent build quality and value for money,positive,India
+CUST1012,Smartwatch Z,2025-03-13,2025-03-14,4,Highly recommend this product,positive,Germany
+CUST1013,Wireless Earbuds,2025-02-26,2025-03-01,5,Very satisfied with the performance,positive,India
+CUST1014,Smartwatch Z,2025-04-26,2025-05-04,1,Battery life is terrible,negative,US
+CUST1015,Laptop Pro,2025-02-18,2025-02-19,3,The product is okay for the price,neutral,Canada
+CUST1016,Bluetooth Speaker,2025-01-29,2025-02-07,1,Battery life is terrible,negative,US
+CUST1017,Smartwatch Z,2025-03-10,2025-03-15,1,Received damaged packaging,negative,Germany
+CUST1018,Smartphone X,2025-02-28,2025-03-06,3,Packaging was normal,neutral,UK
+CUST1019,Wireless Earbuds,2025-02-21,2025-02-22,5,Highly recommend this product,positive,India
+CUST1020,Smartphone X,2025-04-12,2025-04-18,2,Customer support did not respond,negative,Germany
+CUST1021,Smartphone X,2025-05-25,2025-06-04,2,Product stopped working after two days,negative,UK
+CUST1022,Bluetooth Speaker,2025-03-10,2025-03-12,5,Very satisfied with the performance,positive,Canada
+CUST1023,Smartphone X,2025-04-29,2025-05-05,1,Battery life is terrible,negative,India
+CUST1024,Laptop Pro,2025-02-04,2025-02-11,5,Amazing product quality and fast delivery,positive,Germany
+CUST1025,Bluetooth Speaker,2025-05-25,2025-05-30,1,Delivery was very slow and frustrating,negative,UK
+CUST1026,Bluetooth Speaker,2025-03-07,2025-03-12,4,Amazing product quality and fast delivery,positive,UK
+CUST1027,Smartwatch Z,2025-04-05,2025-04-12,3,Nothing special but works fine,neutral,Canada
+CUST1028,Smartwatch Z,2025-02-10,2025-02-20,1,Received damaged packaging,negative,India
+CUST1029,Smartphone X,2025-02-23,2025-03-05,3,Nothing special but works fine,neutral,Canada
+CUST1030,Laptop Pro,2025-05-16,2025-05-26,5,Amazing product quality and fast delivery,positive,UK
+CUST1031,Laptop Pro,2025-01-27,2025-01-30,3,Packaging was normal,neutral,Canada
+CUST1032,Smartwatch Z,2025-02-01,2025-02-03,4,Amazing product quality and fast delivery,positive,Canada
+CUST1033,Bluetooth Speaker,2025-03-16,2025-03-21,4,Very satisfied with the performance,positive,Germany
+CUST1034,Smartwatch Z,2025-01-26,2025-01-27,5,Very satisfied with the performance,positive,UK
+CUST1035,Smartwatch Z,2025-04-26,2025-05-06,3,Delivery was acceptable,neutral,Canada
+CUST1036,Smartphone X,2025-02-06,2025-02-15,3,Nothing special but works fine,neutral,Germany
+CUST1037,Laptop Pro,2025-02-26,2025-03-07,4,Great customer support experience,positive,US
+CUST1038,Bluetooth Speaker,2025-03-18,2025-03-22,3,The product is okay for the price,neutral,Canada
+CUST1039,Bluetooth Speaker,2025-01-14,2025-01-21,2,Battery life is terrible,negative,US
+CUST1040,Wireless Earbuds,2025-05-26,2025-06-03,1,Product stopped working after two days,negative,UK
+CUST1041,Laptop Pro,2025-04-09,2025-04-11,4,Excellent build quality and value for money,positive,US
+CUST1042,Wireless Earbuds,2025-02-06,2025-02-08,3,The product is okay for the price,neutral,Canada
+CUST1043,Wireless Earbuds,2025-04-22,2025-04-27,2,Received damaged packaging,negative,US
+CUST1044,Smartphone X,2025-05-01,2025-05-07,3,Delivery was acceptable,neutral,US
+CUST1045,Wireless Earbuds,2025-04-04,2025-04-05,1,Product stopped working after two days,negative,Canada
+CUST1046,Bluetooth Speaker,2025-01-16,2025-01-25,2,Delivery was very slow and frustrating,negative,UK
+CUST1047,Smartwatch Z,2025-05-09,2025-05-19,5,Amazing product quality and fast delivery,positive,India
+CUST1048,Smartphone X,2025-04-03,2025-04-08,5,Excellent build quality and value for money,positive,US
+CUST1049,Wireless Earbuds,2025-05-10,2025-05-12,3,Delivery was acceptable,neutral,Canada
+CUST1050,Wireless Earbuds,2025-03-28,2025-04-04,3,Packaging was normal,neutral,Germany
+CUST1051,Bluetooth Speaker,2025-05-05,2025-05-13,2,Customer support did not respond,negative,India
+CUST1052,Laptop Pro,2025-01-16,2025-01-26,3,Packaging was normal,neutral,Canada
+CUST1053,Smartphone X,2025-05-23,2025-05-29,5,Highly recommend this product,positive,UK
+CUST1054,Smartphone X,2025-03-06,2025-03-09,4,Highly recommend this product,positive,India
+CUST1055,Smartphone X,2025-04-29,2025-05-02,4,Excellent build quality and value for money,positive,US
+CUST1056,Smartwatch Z,2025-05-30,2025-06-05,1,Product stopped working after two days,negative,UK
+CUST1057,Bluetooth Speaker,2025-04-04,2025-04-13,2,Customer support did not respond,negative,Germany
+CUST1058,Bluetooth Speaker,2025-04-06,2025-04-16,3,The product is okay for the price,neutral,UK
+CUST1059,Smartphone X,2025-02-20,2025-03-01,3,Nothing special but works fine,neutral,Canada
+CUST1060,Wireless Earbuds,2025-03-06,2025-03-11,5,Excellent build quality and value for money,positive,India
+CUST1061,Wireless Earbuds,2025-01-08,2025-01-16,5,Highly recommend this product,positive,UK
+CUST1062,Smartwatch Z,2025-04-09,2025-04-14,1,Received damaged packaging,negative,US
+CUST1063,Wireless Earbuds,2025-03-02,2025-03-11,3,Nothing special but works fine,neutral,UK
+CUST1064,Laptop Pro,2025-05-28,2025-05-31,3,Nothing special but works fine,neutral,Germany
+CUST1065,Smartphone X,2025-05-16,2025-05-17,1,Battery life is terrible,negative,Germany
+CUST1066,Laptop Pro,2025-03-22,2025-03-26,4,Great customer support experience,positive,India
+CUST1067,Laptop Pro,2025-05-06,2025-05-09,5,Highly recommend this product,positive,Canada
+CUST1068,Bluetooth Speaker,2025-04-19,2025-04-27,4,Very satisfied with the performance,positive,India
+CUST1069,Wireless Earbuds,2025-05-28,2025-06-06,1,Received damaged packaging,negative,Canada
+CUST1070,Bluetooth Speaker,2025-04-25,2025-04-26,4,Very satisfied with the performance,positive,Canada
+CUST1071,Smartwatch Z,2025-03-05,2025-03-11,2,Customer support did not respond,negative,Germany
+CUST1072,Smartwatch Z,2025-04-26,2025-04-27,3,Average experience overall,neutral,US
+CUST1073,Wireless Earbuds,2025-02-04,2025-02-13,4,Very satisfied with the performance,positive,UK
+CUST1074,Smartphone X,2025-02-08,2025-02-13,4,Very satisfied with the performance,positive,Canada
+CUST1075,Wireless Earbuds,2025-04-20,2025-04-30,3,The product is okay for the price,neutral,UK
+CUST1076,Smartwatch Z,2025-02-03,2025-02-09,3,Delivery was acceptable,neutral,Germany
+CUST1077,Laptop Pro,2025-02-05,2025-02-09,2,Received damaged packaging,negative,US
+CUST1078,Smartwatch Z,2025-04-25,2025-05-03,1,Battery life is terrible,negative,US
+CUST1079,Bluetooth Speaker,2025-04-05,2025-04-08,3,Delivery was acceptable,neutral,Canada
+CUST1080,Smartwatch Z,2025-04-20,2025-04-30,4,Amazing product quality and fast delivery,positive,Germany
+CUST1081,Smartwatch Z,2025-03-31,2025-04-03,4,Very satisfied with the performance,positive,Canada
+CUST1082,Wireless Earbuds,2025-04-03,2025-04-13,1,Received damaged packaging,negative,UK
+CUST1083,Wireless Earbuds,2025-01-07,2025-01-11,4,Very satisfied with the performance,positive,UK
+CUST1084,Smartwatch Z,2025-02-19,2025-03-01,3,Delivery was acceptable,neutral,Canada
+CUST1085,Smartphone X,2025-03-04,2025-03-11,5,Very satisfied with the performance,positive,US
+CUST1086,Smartphone X,2025-01-20,2025-01-26,4,Highly recommend this product,positive,Canada
+CUST1087,Smartwatch Z,2025-03-29,2025-03-30,3,Average experience overall,neutral,UK
+CUST1088,Laptop Pro,2025-02-17,2025-02-21,5,Very satisfied with the performance,positive,UK
+CUST1089,Wireless Earbuds,2025-01-13,2025-01-19,3,Delivery was acceptable,neutral,UK
+CUST1090,Laptop Pro,2025-01-13,2025-01-20,3,Packaging was normal,neutral,India
+CUST1091,Wireless Earbuds,2025-02-20,2025-02-27,1,Delivery was very slow and frustrating,negative,Germany
+CUST1092,Smartphone X,2025-05-29,2025-06-06,2,Battery life is terrible,negative,Germany
+CUST1093,Smartwatch Z,2025-05-28,2025-06-05,2,Customer support did not respond,negative,India
+CUST1094,Smartphone X,2025-04-10,2025-04-16,4,Great customer support experience,positive,UK
+CUST1095,Smartphone X,2025-05-03,2025-05-13,3,Packaging was normal,neutral,India
+CUST1096,Wireless Earbuds,2025-02-24,2025-02-28,5,Great customer support experience,positive,US
+CUST1097,Smartphone X,2025-01-14,2025-01-23,3,Delivery was acceptable,neutral,India
+CUST1098,Smartwatch Z,2025-01-13,2025-01-17,5,Excellent build quality and value for money,positive,Germany
+CUST1099,Smartphone X,2025-01-22,2025-01-24,2,Delivery was very slow and frustrating,negative,Germany
+CUST1100,Smartphone X,2025-04-08,2025-04-14,2,Battery life is terrible,negative,US
+CUST1101,Smartphone X,2025-04-24,2025-05-04,1,Delivery was very slow and frustrating,negative,Canada
+CUST1102,Smartphone X,2025-01-25,2025-01-28,5,Excellent build quality and value for money,positive,UK
+CUST1103,Bluetooth Speaker,2025-01-16,2025-01-25,5,Excellent build quality and value for money,positive,India
+CUST1104,Wireless Earbuds,2025-02-22,2025-02-25,5,Great customer support experience,positive,UK
+CUST1105,Laptop Pro,2025-04-09,2025-04-15,3,Packaging was normal,neutral,Germany
+CUST1106,Smartphone X,2025-01-20,2025-01-28,4,Excellent build quality and value for money,positive,Canada
+CUST1107,Smartphone X,2025-05-01,2025-05-02,2,Received damaged packaging,negative,Canada
+CUST1108,Bluetooth Speaker,2025-01-04,2025-01-05,2,Product stopped working after two days,negative,UK
+CUST1109,Laptop Pro,2025-01-20,2025-01-30,5,Great customer support experience,positive,UK
+CUST1110,Smartwatch Z,2025-04-04,2025-04-06,2,Battery life is terrible,negative,UK
+CUST1111,Laptop Pro,2025-03-12,2025-03-19,4,Great customer support experience,positive,India
+CUST1112,Laptop Pro,2025-03-04,2025-03-06,1,Customer support did not respond,negative,Germany
+CUST1113,Laptop Pro,2025-02-18,2025-02-28,3,Nothing special but works fine,neutral,India
+CUST1114,Smartwatch Z,2025-01-06,2025-01-08,3,Average experience overall,neutral,UK
+CUST1115,Smartwatch Z,2025-03-13,2025-03-18,1,Battery life is terrible,negative,UK
+CUST1116,Smartwatch Z,2025-04-15,2025-04-18,3,The product is okay for the price,neutral,India
+CUST1117,Wireless Earbuds,2025-05-29,2025-05-31,2,Battery life is terrible,negative,UK
+CUST1118,Bluetooth Speaker,2025-04-30,2025-05-01,5,Amazing product quality and fast delivery,positive,UK
+CUST1119,Smartphone X,2025-03-19,2025-03-23,3,The product is okay for the price,neutral,India

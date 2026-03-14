@@ -1,7 +1,6 @@
 require('dotenv').config();
 
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const app = express();
@@ -14,12 +13,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // Database Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/myapp')
-  .then(() => console.log('✅ MongoDB Connected'))
-  .catch((err) => {
-    console.error('❌ MongoDB Connection Error:', err);
-    process.exit(1);
-  });
+const connectDB = require('./db');
+connectDB();
+
 // AUTH ROUTES (SVH Authentication)
 const authRoutes = require('./auth/routes');
 app.use('/auth', authRoutes);
@@ -29,6 +25,8 @@ const aiRoutes = require('./routes/aiRoutes');
 const medicalRoutes = require('./routes/medicalRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const aiToolsRoutes = require('./routes/aiToolsRoutes');
+const apiKeyRoutes = require('./routes/apiKeyRoutes');
+const externalRoutes = require('./routes/externalRoutes');
 
 // All feature routes are mounted under /api to keep a clean namespace.
 // New modules can be added by creating a route file and adding one line here.
@@ -37,6 +35,8 @@ app.use('/api', aiRoutes);
 app.use('/api', medicalRoutes);
 app.use('/api', feedbackRoutes);
 app.use('/api', aiToolsRoutes);
+app.use('/api', apiKeyRoutes);
+app.use('/api', externalRoutes);
 // Health Check
 app.get('/', (req, res) => {
   res.json({ 

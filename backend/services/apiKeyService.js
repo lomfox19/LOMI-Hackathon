@@ -1,34 +1,49 @@
 const crypto = require('crypto');
+const ApiKey = require('../models/ApiKey');
 
 /**
  * API Key Service
- * Manages master credentials for Intelligence Web Services.
- * Using in-memory storage to adhere to "No database schema modification" rule.
+ * Manages credentials for businesses to access AI Intelligence Platform.
  */
 class ApiKeyService {
-    constructor() {
-        this.keys = new Map();
-    }
-
-    async generateKey(userId) {
+    async generateKey(userId, projectName) {
         // Revoke existing key if any (one key per user for this demo)
-        this.revokeKey(userId);
+        await this.revokeKey(userId);
 
-        const key = 'sk_live_' + crypto.randomBytes(16).toString('hex');
-        this.keys.set(userId, {
-            key,
-            createdAt: new Date(),
-            userId
+        console.log("Generating API key for project:", projectName);
+        const key = crypto.randomBytes(32).toString('hex');
+        
+        const newKey = await ApiKey.create({
+            apiKey: key,
+            projectName,
+            createdBy: userId,
+            createdAt: new Date()
         });
+
         return key;
     }
 
-    getKey(userId) {
-        return this.keys.get(userId);
+    async getKey(userId) {
+        const keyData = await ApiKey.findOne({ createdBy: userId });
+        if (!keyData) return null;
+        return {
+            key: keyData.apiKey,
+            projectName: keyData.projectName,
+            createdAt: keyData.createdAt
+        };
     }
 
-    revokeKey(userId) {
-        return this.keys.delete(userId);
+    async revokeKey(userId) {
+        return await ApiKey.deleteOne({ createdBy: userId });
+    }
+
+    async validateKey(apiKey) {
+        const keyEntry = await ApiKey.findOne({ apiKey });
+        if (keyEntry) {
+            console.log("API key validated for external request");
+            return keyEntry;
+        }
+        return null;
     }
 }
 

@@ -1,0 +1,6 @@
+textblob
+spacy
+nltk
+pandas
+numpy
+scikit-learn

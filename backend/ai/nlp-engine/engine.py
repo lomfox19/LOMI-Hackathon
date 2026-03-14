@@ -1,15 +1,19 @@
 import sys
 import json
-from sentiment_analysis import analyze_sentiment
-from topic_extraction import extract_topics
+from sentiment_analyzer import analyze_sentiment
+from topicextraction import extract_topics
 from insight_generation import generate_insight
 
 def main():
     if len(sys.argv) < 2:
-        print(json.dumps({"status": "error", "message": "No text provided"}))
-        return
-        
-    text = " ".join(sys.argv[1:])
+        sample_feedback = [
+            "The product quality is excellent",
+            "Customer support is terrible",
+            "Delivery was slow"
+        ]
+        text = " ".join(sample_feedback)
+    else:
+        text = " ".join(sys.argv[1:])
     
     try:
         # Perform analyses

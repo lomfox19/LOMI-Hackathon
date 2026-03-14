@@ -18,8 +18,8 @@ class AiAnalysisService {
             this.groq = new Groq({
                 apiKey: apiKey || 'DUMMY_KEY'
             });
-            // Using llama3-70b-8192 for high-quality intelligence analysis
-            this.model = "llama3-70b-8192";
+            // Using llama-3.1-8b-instant for high-quality intelligence analysis
+            this.model = "llama-3.1-8b-instant";
         } catch (error) {
             console.error("Failed to initialize Groq Client:", error);
             throw error;
