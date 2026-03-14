@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   MessageSquare, 
   Smile, 
@@ -12,8 +12,7 @@ import {
   FileText,
   Lightbulb,
   ArrowRight,
-  RefreshCw,
-  Loader2
+  RefreshCw
 } from 'lucide-react';
 import apiClient from '../api/client';
 

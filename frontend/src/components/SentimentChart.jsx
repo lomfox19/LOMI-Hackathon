@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import {
     PieChart,
     Pie,
     Cell,
     ResponsiveContainer,
-    Tooltip,
-    Legend
+    Tooltip
 } from 'recharts';
-import { TrendingUp, Sparkles, BrainCircuit, Activity } from 'lucide-react';
+import { Sparkles, BrainCircuit, Activity } from 'lucide-react';
 import apiClient from '../api/client';
 
 const SentimentChart = ({ stats: externalStats }) => {
@@ -23,15 +22,7 @@ const SentimentChart = ({ stats: externalStats }) => {
         Negative: '#D62828'
     };
 
-    useEffect(() => {
-        if (externalStats) {
-            updateFromExternal(externalStats);
-        } else {
-            fetchInsights();
-        }
-    }, [externalStats]);
-
-    const updateFromExternal = (s) => {
+    const updateFromExternal = useCallback((s) => {
         setStats(s);
         const total = s.totalFeedback || 0;
         if (total === 0) {
@@ -47,9 +38,9 @@ const SentimentChart = ({ stats: externalStats }) => {
         ];
         setData(chartData);
         setLoading(false);
-    };
+    }, []);
 
-    const fetchInsights = async () => {
+    const fetchInsights = useCallback(async () => {
         try {
             setLoading(true);
             const response = await apiClient.get('/api/feedback/analytics');
@@ -59,7 +50,15 @@ const SentimentChart = ({ stats: externalStats }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [updateFromExternal]);
+
+    useEffect(() => {
+        if (externalStats) {
+            updateFromExternal(externalStats);
+        } else {
+            fetchInsights();
+        }
+    }, [externalStats, fetchInsights, updateFromExternal]);
 
     const CustomTooltip = ({ active, payload }) => {
         if (active && payload && payload.length) {
@@ -205,4 +204,4 @@ const SentimentChart = ({ stats: externalStats }) => {
     );
 };
 
-export default SentimentChart;
+export default SentimentChart;

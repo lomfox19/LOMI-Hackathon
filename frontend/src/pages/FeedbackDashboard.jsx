@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import apiClient from '../api/client';
 import {
@@ -10,7 +10,6 @@ import {
   User,
   BrainCircuit,
   Sparkles,
-  TrendingUp,
   Bell,
   ChevronLeft,
   ChevronRight,
@@ -120,25 +119,21 @@ const FeedbackDashboard = ({ user, onLogout }) => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { signout } = useAuth();
   const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  const fetchDashboardStats = async () => {
+  const fetchDashboardStats = useCallback(async () => {
     try {
-      setLoading(true);
       const response = await apiClient.get('/api/feedback/analytics');
       setStats(response.data);
     } catch (error) {
       console.error('Failed to fetch dashboard stats:', error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (activeSection === 'dashboard') {
       fetchDashboardStats();
     }
-  }, [activeSection]);
+  }, [activeSection, fetchDashboardStats]);
 
   const handleNavClick = (id) => {
     setActiveSection(id);

@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldAlert, 
   Search, 
-  AlertTriangle, 
-  CheckCircle2, 
   Fingerprint, 
   Zap,
   Loader2,

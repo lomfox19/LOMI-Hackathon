@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
     Key,
     Terminal,
@@ -8,7 +8,6 @@ import {
     RefreshCcw,
     Trash2,
     Code2,
-    FileCode,
     Globe,
     Lock,
     Zap,
@@ -22,7 +21,6 @@ const ApiAccess = () => {
     const [projectName, setProjectName] = useState('');
     const [copied, setCopied] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [fetchLoading, setFetchLoading] = useState(true);
 
     useEffect(() => {
         fetchKey();
@@ -30,13 +28,10 @@ const ApiAccess = () => {
 
     const fetchKey = async () => {
         try {
-            setFetchLoading(true);
             const response = await apiClient.get('/api/api-key');
             setApiKey(response.data.key);
         } catch (error) {
             // 404 means no key, which is fine
-        } finally {
-            setFetchLoading(false);
         }
     };
 
