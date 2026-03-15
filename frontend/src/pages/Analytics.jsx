@@ -16,6 +16,19 @@ import {
 } from 'lucide-react';
 import apiClient from '../api/client';
 
+// Safely coerce to string for render (API may return objects)
+const toDisplayString = (value) => {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    if (typeof value === 'object') {
+        if (value.recommendation != null) return toDisplayString(value.recommendation);
+        if (Array.isArray(value)) return value.map(toDisplayString).filter(Boolean).join('. ');
+        return Object.values(value).map(toDisplayString).filter(Boolean).join('. ');
+    }
+    return '';
+};
+
 const COLORS = {
     positive: '#2E7D5B',
     neutral: '#FCBF49',
@@ -86,7 +99,7 @@ const Analytics = () => {
                     transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                     className="w-12 h-12 border-4 border-ai-secondary/30 border-t-ai-secondary rounded-full mb-4"
                 />
-                <p className="text-ai-primary/60 font-medium animate-pulse">Initializing Intelligence Flow...</p>
+                <p className="text-ai-primary/60 font-medium animate-pulse">AI Engine Processing Feedback...</p>
             </div>
         );
     }
@@ -157,7 +170,7 @@ const Analytics = () => {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={data.sentimentDistribution}
+                                    data={Array.isArray(data.sentimentDistribution) ? data.sentimentDistribution : []}
                                     cx="50%"
                                     cy="50%"
                                     innerRadius={70}
@@ -166,7 +179,7 @@ const Analytics = () => {
                                     dataKey="value"
                                     stroke="none"
                                 >
-                                    {data.sentimentDistribution.map((entry, index) => (
+                                    {(Array.isArray(data.sentimentDistribution) ? data.sentimentDistribution : []).map((entry, index) => (
                                         <Cell 
                                             key={`cell-${index}`} 
                                             fill={COLORS[entry.name.toLowerCase()] || COLORS.neutral} 
@@ -201,7 +214,7 @@ const Analytics = () => {
                     </div>
                     <div className="flex-1 min-h-[250px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={data.topicDistribution} layout="vertical" margin={{ left: 20, right: 20 }}>
+                            <BarChart data={Array.isArray(data.topicDistribution) ? data.topicDistribution : []} layout="vertical" margin={{ left: 20, right: 20 }}>
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(0,48,73,0.05)" />
                                 <XAxis type="number" hide />
                                 <YAxis 
@@ -250,7 +263,7 @@ const Analytics = () => {
                     </div>
                     <div className="flex-1 min-h-[250px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={data.feedbackTrends} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                            <LineChart data={Array.isArray(data.feedbackTrends) ? data.feedbackTrends : []} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,48,73,0.05)" />
                                 <XAxis 
                                     dataKey="date" 
@@ -372,10 +385,10 @@ const Analytics = () => {
                             <Sparkles className="w-5 h-5 text-ai-accent-gold" />
                             <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">AI Executive Summary</span>
                         </div>
-                        <h4 className="text-xl font-heading font-bold mb-2">{data.aiInsights.insight_summary}</h4>
+                        <h4 className="text-xl font-heading font-bold mb-2">{toDisplayString(data.aiInsights?.insight_summary)}</h4>
                         <div className="flex items-center gap-2 text-sm opacity-90 italic">
                             <RefreshCcw className="w-3.5 h-3.5 animate-spin-slow" />
-                            <span>Actionable Advice: {data.aiInsights.recommendation}</span>
+                            <span>Actionable Advice: {toDisplayString(data.aiInsights?.recommendation)}</span>
                         </div>
                     </div>
                 </motion.div>

@@ -44,9 +44,16 @@ const SentimentChart = ({ stats: externalStats }) => {
         try {
             setLoading(true);
             const response = await apiClient.get('/api/feedback/analytics');
-            updateFromExternal(response.data);
+            if (response?.data && typeof response.data === 'object') {
+                updateFromExternal(response.data);
+            } else {
+                setData([]);
+                setStats(null);
+            }
         } catch (error) {
             console.error('Failed to fetch sentiment insights:', error);
+            setData([]);
+            setStats(null);
         } finally {
             setLoading(false);
         }

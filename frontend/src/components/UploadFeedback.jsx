@@ -15,6 +15,7 @@ const UploadFeedback = ({ onUploadSuccess }) => {
   const [file, setFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('idle'); // idle, uploading, success, error
+  const [uploadError, setUploadError] = useState(null); // server error message
   const [previewData, setPreviewData] = useState([]);
   const fileInputRef = useRef(null);
   const handleDragOver = (e) => {
@@ -43,6 +44,7 @@ const UploadFeedback = ({ onUploadSuccess }) => {
   const processFile = (file) => {
     setFile(file);
     setUploadStatus('idle');
+    setUploadError(null);
     
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -63,15 +65,13 @@ const UploadFeedback = ({ onUploadSuccess }) => {
   };
   const handleUpload = async () => {
     if (!file) return;
+    setUploadError(null);
     setUploadStatus('uploading');
     const formData = new FormData();
     formData.append('file', file);
     try {
-      await apiClient.post('/api/feedback/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // Do not set Content-Type: let the browser set multipart/form-data with boundary so the server can parse the file
+      await apiClient.post('/api/feedback/upload', formData);
       setUploadStatus('success');
       if (onUploadSuccess) onUploadSuccess();
       // Reset after 3 seconds on success
@@ -81,6 +81,8 @@ const UploadFeedback = ({ onUploadSuccess }) => {
     } catch (err) {
       console.error('Upload failed:', err);
       setUploadStatus('error');
+      const msg = err.response?.data?.error || err.message || 'Upload failed. Try again.';
+      setUploadError(msg);
     }
   };
   return (
@@ -219,7 +221,7 @@ const UploadFeedback = ({ onUploadSuccess }) => {
                 {uploadStatus === 'uploading' ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Processing Dataset...
+                    AI Engine Processing Feedback...
                   </>
                 ) : uploadStatus === 'success' ? (
                   <>
@@ -240,10 +242,10 @@ const UploadFeedback = ({ onUploadSuccess }) => {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    className="flex items-center gap-2 text-red-500 text-xs font-semibold"
+                    className="flex items-center gap-2 text-red-500 text-xs font-semibold max-w-xs"
                   >
-                    <AlertCircle className="w-4 h-4" />
-                    Upload failed. Try again?
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{uploadError || 'Upload failed. Try again?'}</span>
                   </motion.div>
                 )}
               </AnimatePresence>

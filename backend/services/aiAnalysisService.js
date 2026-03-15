@@ -1,9 +1,15 @@
 const Groq = require("groq-sdk");
+const { spawn } = require("child_process");
+const path = require("path");
 const dotenv = require('dotenv');
 dotenv.config();
 
+/** Path to local NLP engine (Python). Used when Groq fails or quota exceeded. */
+const NLP_ENGINE_DIR = path.resolve(__dirname, "..", "nlp_engine");
+const NLP_ENGINE_SCRIPT = path.join(NLP_ENGINE_DIR, "engine.py");
+
 /**
- * AI Analysis Service using Groq AI
+ * AI Analysis Service: Groq AI primary, local NLP fallback.
  */
 class AiAnalysisService {
     constructor() {
@@ -27,17 +33,53 @@ class AiAnalysisService {
     }
 
     /**
-     * Analyze a list of feedback texts using Groq AI
-     * @param {string[]} feedbackList 
+     * Run local Python NLP engine. Returns same shape as Groq for dashboard/analytics.
+     * @param {string[]} feedbackList - capped to 50 inside engine; pass latest 50 here for consistency
+     */
+    _runLocalNlp(feedbackList) {
+        return new Promise((resolve, reject) => {
+            const pythonCmd = process.env.PYTHON_PATH || "python";
+            const proc = spawn(pythonCmd, [NLP_ENGINE_SCRIPT], {
+                cwd: NLP_ENGINE_DIR,
+                stdio: ["pipe", "pipe", "pipe"],
+            });
+            const input = JSON.stringify({ feedback_list: feedbackList });
+            proc.stdin.write(input, "utf8");
+            proc.stdin.end();
+            let stdout = "";
+            let stderr = "";
+            proc.stdout.on("data", (chunk) => { stdout += chunk.toString(); });
+            proc.stderr.on("data", (chunk) => { stderr += chunk.toString(); });
+            proc.on("close", (code) => {
+                if (code !== 0) {
+                    return reject(new Error(stderr || `Local NLP exited with code ${code}`));
+                }
+                try {
+                    const result = JSON.parse(stdout);
+                    if (result.error) return reject(new Error(result.error));
+                    resolve(result);
+                } catch (e) {
+                    reject(new Error("Failed to parse local NLP output: " + stdout.slice(0, 200)));
+                }
+            });
+            proc.on("error", (err) => reject(err));
+        });
+    }
+
+    /**
+     * Analyze a list of feedback texts: Groq AI primary, local NLP fallback.
+     * Only the latest 50 entries are analyzed for performance.
+     * @param {string[]} feedbackList
      */
     async analyzeFeedback(feedbackList) {
-        try {
-            if (!feedbackList || feedbackList.length === 0) {
-                return null;
-            }
+        if (!feedbackList || feedbackList.length === 0) {
+            return null;
+        }
 
+        const latest50 = feedbackList.slice(-50);
+
+        try {
             console.log("Sending feedback to Groq AI...");
-            
             const prompt = `
                 You are an AI business intelligence assistant for a Customer Feedback Analytics Platform.
                 Your job is to analyze customer reviews and extract meaningful insights for businesses.
@@ -55,37 +97,34 @@ class AiAnalysisService {
                 8. "keywords": Array of 10-12 most significant industry-specific keywords.
 
                 Dataset:
-                ${feedbackList.map((text, i) => `${i + 1}. "${text}"`).join("\n")}
+                ${latest50.map((text, i) => `${i + 1}. "${text}"`).join("\n")}
 
                 Output EXACTLY and ONLY a valid JSON object. Do not include markdown formatting or extra text.
             `;
 
             const completion = await this.groq.chat.completions.create({
                 messages: [
-                    {
-                        role: "system",
-                        content: "You are an AI business intelligence assistant that analyzes customer feedback. You must output results in EXACT JSON format."
-                    },
-                    {
-                        role: "user",
-                        content: prompt
-                    }
+                    { role: "system", content: "You are an AI business intelligence assistant that analyzes customer feedback. You must output results in EXACT JSON format." },
+                    { role: "user", content: prompt }
                 ],
                 model: this.model,
                 response_format: { type: "json_object" }
             });
 
-            console.log("Groq response received:", JSON.stringify(completion.choices[0]?.message?.content).substring(0, 100) + "...");
             const text = completion.choices[0]?.message?.content;
-
-            if (!text) {
-                throw new Error("Empty response from Groq AI");
-            }
-
+            if (!text) throw new Error("Empty response from Groq AI");
+            console.log("Groq response received.");
             return JSON.parse(text);
         } catch (error) {
-            console.error("Groq AI Analysis Error:", error);
-            throw error;
+            console.warn("Groq AI Analysis failed, using local NLP fallback:", error.message);
+            try {
+                const localResult = await this._runLocalNlp(latest50);
+                console.log("Local NLP analysis completed (source: local_nlp).");
+                return localResult;
+            } catch (fallbackErr) {
+                console.error("Local NLP fallback also failed:", fallbackErr.message);
+                throw error;
+            }
         }
     }
 

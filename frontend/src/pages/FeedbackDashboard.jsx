@@ -390,7 +390,7 @@ const FeedbackDashboard = ({ user, onLogout }) => {
                       <MetricCard
                         index={1}
                         title="Positive Sentiment"
-                        value={stats?.totalFeedback > 0 ? `${Math.round((stats.sentimentCounts.positive / stats.totalFeedback) * 100)}%` : '0%'}
+                        value={stats?.totalFeedback > 0 ? `${Math.round(((stats.sentimentCounts?.positive ?? 0) / stats.totalFeedback) * 100)}%` : '0%'}
                         icon={Smile}
                         trend="up"
                         trendValue="AI Verified"
@@ -398,7 +398,7 @@ const FeedbackDashboard = ({ user, onLogout }) => {
                       <MetricCard
                         index={2}
                         title="Negative Sentiment"
-                        value={stats?.totalFeedback > 0 ? `${Math.round((stats.sentimentCounts.negative / stats.totalFeedback) * 100)}%` : '0%'}
+                        value={stats?.totalFeedback > 0 ? `${Math.round(((stats.sentimentCounts?.negative ?? 0) / stats.totalFeedback) * 100)}%` : '0%'}
                         icon={Frown}
                         trend="down"
                         trendValue="AI Tracked"

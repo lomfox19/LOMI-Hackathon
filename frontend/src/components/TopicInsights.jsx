@@ -25,7 +25,8 @@ const TopicInsights = ({ topics: externalTopics }) => {
         try {
             setLoading(true);
             const response = await apiClient.get('/api/feedback/insights');
-            setTopics(response.data.topicDistribution || []);
+            const raw = response?.data?.topicDistribution;
+            setTopics(Array.isArray(raw) ? raw : []);
         } catch (error) {
             console.error('Failed to fetch topic insights:', error);
         } finally {

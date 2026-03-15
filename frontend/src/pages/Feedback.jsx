@@ -16,6 +16,19 @@ import {
 } from 'lucide-react';
 import apiClient from '../api/client';
 
+// Safely coerce to string for render (API may return objects e.g. { recommendation: "..." })
+const toDisplayString = (value) => {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    if (typeof value === 'object') {
+        if (value.recommendation != null) return toDisplayString(value.recommendation);
+        if (Array.isArray(value)) return value.map(toDisplayString).filter(Boolean).join('. ');
+        return Object.values(value).map(toDisplayString).filter(Boolean).join('. ');
+    }
+    return '';
+};
+
 const Feedback = () => {
     const [insights, setInsights] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -65,7 +78,7 @@ const Feedback = () => {
         );
     }
 
-    if (!insights || insights.message === 'No data available') {
+    if (!insights || insights.message === 'No data available' || !insights.sentimentDistribution) {
         return (
             <div className="flex flex-col items-center justify-center h-[60vh] text-center px-6">
                 <div className="w-20 h-20 bg-ai-primary/5 rounded-3xl flex items-center justify-center mb-6">
@@ -110,10 +123,10 @@ const Feedback = () => {
             {/* Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                    { title: "Total Feedback", value: insights.totalFeedback, icon: MessageSquare, color: "text-ai-primary", bg: "bg-ai-primary/5" },
-                    { title: "Positive Sentiment", value: insights.sentimentDistribution.positive, icon: Smile, color: "text-ai-secondary", bg: "bg-ai-secondary/5" },
-                    { title: "Neutral Sentiment", value: insights.sentimentDistribution.neutral, icon: Meh, color: "text-orange-500", bg: "bg-orange-50" },
-                    { title: "Negative Sentiment", value: insights.sentimentDistribution.negative, icon: Frown, color: "text-red-500", bg: "bg-red-50" }
+                    { title: "Total Feedback", value: insights.totalFeedback ?? 0, icon: MessageSquare, color: "text-ai-primary", bg: "bg-ai-primary/5" },
+                    { title: "Positive Sentiment", value: insights.sentimentDistribution?.positive ?? '0%', icon: Smile, color: "text-ai-secondary", bg: "bg-ai-secondary/5" },
+                    { title: "Neutral Sentiment", value: insights.sentimentDistribution?.neutral ?? '0%', icon: Meh, color: "text-orange-500", bg: "bg-orange-50" },
+                    { title: "Negative Sentiment", value: insights.sentimentDistribution?.negative ?? '0%', icon: Frown, color: "text-red-500", bg: "bg-red-50" }
                 ].map((stat, i) => (
                     <motion.div 
                         key={i}
@@ -142,7 +155,7 @@ const Feedback = () => {
                         <h3 className="text-lg font-heading font-bold text-ai-primary">Critical Feedback Vectors</h3>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {insights.topicDistribution?.map((topic, i) => (
+                        {(Array.isArray(insights.topicDistribution) ? insights.topicDistribution : []).map((topic, i) => (
                             <div key={i} className="bg-white/40 border border-ai-primary/5 p-5 rounded-xl flex items-center justify-between group hover:bg-white transition-all cursor-default relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-1 h-full bg-ai-secondary opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <div className="flex items-center gap-4">
@@ -152,9 +165,9 @@ const Feedback = () => {
                                     <span className="font-bold text-ai-primary text-sm">{topic.name}</span>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-xs font-bold text-ai-secondary">{topic.percentage}%</span>
+                                    <span className="text-xs font-bold text-ai-secondary">{topic.percentage ?? 0}%</span>
                                     <div className="w-12 h-1 bg-ai-primary/5 rounded-full mt-1 overflow-hidden">
-                                        <div className="h-full bg-ai-secondary" style={{ width: `${topic.percentage}%` }} />
+                                        <div className="h-full bg-ai-secondary" style={{ width: `${Number(topic.percentage) || 0}%` }} />
                                     </div>
                                 </div>
                             </div>
@@ -173,7 +186,7 @@ const Feedback = () => {
                     <div className="relative z-10">
                         <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-white/40 mb-8">Dominant Lexicons</h3>
                         <div className="flex flex-wrap gap-3">
-                            {insights.keywords?.map((word, i) => (
+                            {(Array.isArray(insights.keywords) ? insights.keywords : []).map((word, i) => (
                                 <motion.span 
                                     key={i}
                                     initial={{ scale: 0.8, opacity: 0 }}
@@ -211,7 +224,7 @@ const Feedback = () => {
                         </p>
                     </div>
                     <div className="lg:col-span-8 space-y-4">
-                        {insights.recommendations?.map((rec, i) => (
+                        {(Array.isArray(insights.recommendations) ? insights.recommendations : []).map((rec, i) => (
                             <motion.div 
                                 key={i}
                                 whileHover={{ x: 10 }}
@@ -219,7 +232,7 @@ const Feedback = () => {
                             >
                                 <div className="text-2xl font-heading font-bold text-ai-secondary opacity-20">0{i+1}</div>
                                 <p className="flex-1 text-sm font-bold text-ai-primary/80 group-hover:text-ai-primary transition-colors">
-                                    {rec}
+                                    {toDisplayString(rec)}
                                 </p>
                                 <ArrowRight className="w-5 h-5 text-ai-secondary opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0" />
                             </motion.div>

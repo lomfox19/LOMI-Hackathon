@@ -9,6 +9,20 @@ import {
     Zap
 } from 'lucide-react';
 import apiClient from '../api/client';
+
+// Safely coerce to string for render (API may return objects e.g. { recommendation: "..." })
+const toDisplayString = (value) => {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    if (typeof value === 'object') {
+        if (value.recommendation != null) return toDisplayString(value.recommendation);
+        if (Array.isArray(value)) return value.map(toDisplayString).filter(Boolean).join('. ');
+        return Object.values(value).map(toDisplayString).filter(Boolean).join('. ');
+    }
+    return '';
+};
+
 const AIInsightPanel = () => {
     const [insights, setInsights] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -77,7 +91,7 @@ const AIInsightPanel = () => {
                                 <div className="flex items-start gap-3">
                                     <MessageSquareQuote className="w-5 h-5 text-white/40 shrink-0 mt-1" />
                                     <p className="text-base font-heading font-medium leading-relaxed text-white/90">
-                                        {insights?.globalSummary || "Analyzing customer sentiment and clustering themes..."}
+                                        {toDisplayString(insights?.globalSummary) || "Analyzing customer sentiment and clustering themes..."}
                                     </p>
                                 </div>
                             </div>
@@ -89,7 +103,7 @@ const AIInsightPanel = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    {insights?.recommendations?.map((rec, index) => (
+                                    {(Array.isArray(insights?.recommendations) ? insights.recommendations : []).map((rec, index) => (
                                         <motion.div
                                             key={index}
                                             initial={{ opacity: 0, x: -10 }}
@@ -99,7 +113,7 @@ const AIInsightPanel = () => {
                                         >
                                             <CheckCircle2 className="w-4 h-4 text-ai-secondary mt-0.5 shrink-0 group-hover/item:scale-110 transition-transform" />
                                             <p className="text-xs text-white/80 font-medium leading-normal">
-                                                {rec}
+                                                {toDisplayString(rec)}
                                             </p>
                                         </motion.div>
                                     ))}

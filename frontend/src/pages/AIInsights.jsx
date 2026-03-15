@@ -16,6 +16,18 @@ import apiClient from '../api/client';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+// Safely coerce API values to string for rendering (API may return objects e.g. { brandPerception, majorWins, criticalFrictionPoints })
+const toDisplayString = (value) => {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    if (typeof value === 'object') {
+        if (Array.isArray(value)) return value.map(toDisplayString).join('. ');
+        return Object.values(value).map(toDisplayString).filter(Boolean).join('. ');
+    }
+    return '';
+};
+
 const AIInsights = () => {
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -64,7 +76,8 @@ const AIInsights = () => {
         yPos += 10;
         doc.setFontSize(11);
         doc.setTextColor(60, 60, 60);
-        const splitSummary = doc.splitTextToSize(report.executiveSummary, 170);
+        const summaryText = toDisplayString(report.executiveSummary);
+        const splitSummary = doc.splitTextToSize(summaryText || 'No summary available.', 170);
         doc.text(splitSummary, 20, yPos);
         yPos += (splitSummary.length * 6) + 10;
 
@@ -74,14 +87,16 @@ const AIInsights = () => {
         doc.text('2. Dataset Overview', 20, yPos);
         yPos += 5;
 
+        const ds = report.dataSummary || {};
+        const counts = ds.sentimentCounts || {};
         autoTable(doc, {
             startY: yPos,
             head: [['Metric', 'Value']],
             body: [
-                ['Total Feedback Entries', report.dataSummary.totalFeedback],
-                ['Positive Sentiment', report.dataSummary.sentimentCounts.positive],
-                ['Neutral Sentiment', report.dataSummary.sentimentCounts.neutral],
-                ['Negative Sentiment', report.dataSummary.sentimentCounts.negative],
+                ['Total Feedback Entries', ds.totalFeedback ?? 0],
+                ['Positive Sentiment', counts.positive ?? 0],
+                ['Neutral Sentiment', counts.neutral ?? 0],
+                ['Negative Sentiment', counts.negative ?? 0],
             ],
             theme: 'striped',
             headStyles: { fillColor: [0, 48, 73] }
@@ -95,8 +110,8 @@ const AIInsights = () => {
         yPos += 10;
         doc.setFontSize(11);
         doc.setTextColor(60, 60, 60);
-        report.keyBusinessProblems.forEach(problem => {
-            doc.text(`• ${problem}`, 25, yPos);
+        (Array.isArray(report.keyBusinessProblems) ? report.keyBusinessProblems : []).forEach(problem => {
+            doc.text(`• ${toDisplayString(problem)}`, 25, yPos);
             yPos += 7;
         });
         yPos += 8;
@@ -108,8 +123,8 @@ const AIInsights = () => {
         yPos += 10;
         doc.setFontSize(11);
         doc.setTextColor(60, 60, 60);
-        report.businessRecommendations.forEach(rec => {
-            doc.text(`• ${rec}`, 25, yPos);
+        (Array.isArray(report.businessRecommendations) ? report.businessRecommendations : []).forEach(rec => {
+            doc.text(`• ${toDisplayString(rec)}`, 25, yPos);
             yPos += 7;
         });
 
@@ -220,7 +235,7 @@ const AIInsights = () => {
                                 AI Executive Summary
                             </h3>
                             <p className="text-lg text-ai-primary/80 leading-relaxed font-medium italic">
-                                "{report.executiveSummary}"
+                                "{toDisplayString(report.executiveSummary)}"
                             </p>
                         </div>
                     </motion.div>
@@ -232,12 +247,12 @@ const AIInsights = () => {
                             Key Business Problems
                         </h3>
                         <ul className="space-y-4">
-                            {report.keyBusinessProblems.map((problem, i) => (
+                            {(Array.isArray(report.keyBusinessProblems) ? report.keyBusinessProblems : []).map((problem, i) => (
                                 <li key={i} className="flex items-start gap-4 group">
                                     <div className="mt-1 w-5 h-5 rounded-full bg-red-50 border border-red-100 flex items-center justify-center shrink-0">
                                         <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
                                     </div>
-                                    <span className="text-ai-primary/80 leading-tight">{problem}</span>
+                                    <span className="text-ai-primary/80 leading-tight">{toDisplayString(problem)}</span>
                                 </li>
                             ))}
                         </ul>
@@ -250,12 +265,12 @@ const AIInsights = () => {
                             Improvement Suggestions
                         </h3>
                         <ul className="space-y-4">
-                            {report.businessRecommendations.map((rec, i) => (
+                            {(Array.isArray(report.businessRecommendations) ? report.businessRecommendations : []).map((rec, i) => (
                                 <li key={i} className="flex items-start gap-4">
                                     <div className="mt-1 p-1 rounded-lg bg-ai-secondary/10 text-ai-secondary shrink-0">
                                         <ArrowRight className="w-3.5 h-3.5" />
                                     </div>
-                                    <span className="text-ai-primary/80 leading-tight font-medium">{rec}</span>
+                                    <span className="text-ai-primary/80 leading-tight font-medium">{toDisplayString(rec)}</span>
                                 </li>
                             ))}
                         </ul>
@@ -270,12 +285,12 @@ const AIInsights = () => {
                                 Growth & Future Strategy
                             </h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {report.futureStrategy.map((strategy, i) => (
+                                {(Array.isArray(report.futureStrategy) ? report.futureStrategy : []).map((strategy, i) => (
                                     <div key={i} className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-colors cursor-default">
                                         <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center mb-4 text-ai-accent-gold font-bold">
                                             {i + 1}
                                         </div>
-                                        <p className="text-sm opacity-90 leading-relaxed">{strategy}</p>
+                                        <p className="text-sm opacity-90 leading-relaxed">{toDisplayString(strategy)}</p>
                                     </div>
                                 ))}
                             </div>
